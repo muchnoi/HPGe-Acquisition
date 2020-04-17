@@ -57,10 +57,12 @@ class TAB_OS:
     self.gui.TriggerHoldoff.valueChanged.connect(  self.gui.QScope.Trigger)
     self.gui.QScope.Trigger()
 
-    self.gui.VScale.valueChanged.connect(self.gui.QScope.Legend)
-    self.gui.HScale.valueChanged.connect(self.gui.QScope.Legend)
-    self.gui.Offset.valueChanged.connect(self.gui.QScope.Legend)
-    self.gui.Delay.valueChanged.connect( self.gui.QScope.Legend)
+    self.gui.ScaleA.valueChanged.connect(self.gui.QScope.Legend)
+    self.gui.ShiftA.valueChanged.connect(self.gui.QScope.Legend)
+    self.gui.ScaleB.valueChanged.connect(self.gui.QScope.Legend)
+    self.gui.ShiftB.valueChanged.connect(self.gui.QScope.Legend)
+    self.gui.ScaleT.valueChanged.connect(self.gui.QScope.Legend)
+    self.gui.ShiftT.valueChanged.connect(self.gui.QScope.Legend)
     
     self.gui.DCoffsetSpinBox.valueChanged.connect(    self.__SpinBox_Value_Changed)
     self.gui.FineGainSpinBox.valueChanged.connect(    self.__SpinBox_Value_Changed)

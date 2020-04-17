@@ -26,16 +26,13 @@ class OscCanvas(FigureCanvas):
     FigureCanvas.__init__(self, fig)
     self.figure.subplotpars.left, self.figure.subplotpars.right = 0.005, 0.995
     self.figure.subplotpars.top, self.figure.subplotpars.bottom = 0.995, 0.12
-    self._plot_ref, self._nsample, self._tsample = None, None, None
+    self._plot_ref, self._nsample, self._tsamp = None, None, None
     for ch in range(5):
       self.__labels[ch] = self.figure.text(0.025 + 0.18*ch, 0.025, "***", 
                                          color    = self.__colors[ch], 
                                          family   = 'monospace', 
                                          fontsize = 14)
     self.osc = self.figure.add_subplot(111)
-
-#  def access_DPP(self, DPP): self.DPP = DPP
-#  def access_gui(self, gui): self.gui = gui
 
   def Prepare(self, DPP, gui):  
     self.DPP = DPP
@@ -48,7 +45,7 @@ class OscCanvas(FigureCanvas):
 
   def Scale(self, zero, gain):
     self.__zero, self.__gain = zero, gain
-    print(zero,gain)
+#    print(zero,gain)
     
   def Loop(self):
     if self.gui.TriggerSingle.isChecked(): 
@@ -62,33 +59,24 @@ class OscCanvas(FigureCanvas):
 
   def Measure(self):
     if self.gui.TriggerSingle.isChecked():  self.DPP.StartAcquisition(self.DPP.CH)
-    self._nsample, self._tsample = self.DPP.GetWaveform(self.DPP.CH)
+    self._nsample, self._tsamp = self.DPP.GetWaveform(self.DPP.CH)
     if self.gui.TriggerSingle.isChecked():  self.DPP.StopAcquisition(self.DPP.CH)
     self.Legend()
   
-  def IGV(self, code, offset): # i. e. Input Graph Voltage  
-    return ((code - self.__zero)*self.__gain + self.__voltshift)/self.__voltscale
-  
+ 
   def Visualize(self):
-#    print('Virtual 1 average = {:.2f} lsb'.format(0.01*sum(self.DPP.Traces.AT1[0:100])))
-#    print('Virtual 2 average = {:.2f} lsb'.format(0.01*sum(self.DPP.Traces.AT2[0:100])))
-#    print('Digital 1 average = {:.2f} lsb'.format(0.01*sum(self.DPP.Traces.DT1[0:100])))
-    """ # This was used for zero determination procedure:
-    D, A = 0.25*DC_Offset, 0.01*sum(self.DPP.Traces.AT2[0:100])
-    print('Signal DC offset = {:.2f} lsb'.format(D))
-    print('Signal 2 average = {:.2f} lsb'.format(A))
-    s = '{:6.2f}  {:6.2f}\n'.format(D,A)
-    with open('negative.txt', 'a') as fp: fp.write(s)
-    """
-
     for to in range(self._nsample):
       if self.DPP.Traces.DT2[to]: break
+    PA,  QA  = self.__gain/self.__AScale, self.__AShift/self.__AScale
+    PB,  QB  = self.__gain/self.__BScale, self.__BShift/self.__BScale
+    PT,  QT  = self._tsamp/self.__TScale, self.__TShift/self.__TScale; QT -= to*PT
+    if self.DPP.boardConfig.WFParams.vp1 is 0: QA -= self.__zero * PA
+    if self.DPP.boardConfig.WFParams.vp2 is 0: QB -= self.__zero * PB
     for t in range(self._nsample): 
-      self.__T[t] = ((t-to)*self._tsample + self.__timeshift)/self.__timescale # this is for X-sxis: (t-to) in [ns]
-      self.__A[t] = self.IGV(self.DPP.Traces.AT1[t], True)
-      self.__B[t] = self.IGV(self.DPP.Traces.AT2[t], False)
-      self.__C[t] = self.DPP.Traces.DT1[t]*6.0 - 3.0
-#      print(self.__T[t], self.__A[t])
+      self.__A[t] = PA * self.DPP.Traces.AT1[t] + QA
+      self.__B[t] = PB * self.DPP.Traces.AT2[t] + QB
+      self.__C[t] = 6. * self.DPP.Traces.DT1[t] - 3.
+      self.__T[t] = PT *                     t  + QT
 
     if self._plot_ref is None:
       A = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color=self.__colors[0])[0]
@@ -105,23 +93,31 @@ class OscCanvas(FigureCanvas):
     self.draw()
 
   def Legend(self):
-    self.__voltscale = self.__vscale[self.gui.VScale.value()]
-    self.__voltshift = 0.1 * self.__voltscale * self.gui.Offset.value()
-    if         self.__voltscale < 1.00: text  = 'A:{:4.0f}mV\n'.format(1000*self.__voltscale)
-    else:                               text  = 'A:{:4.1f} V\n'.format(     self.__voltscale)
-    if -1.00 < self.__voltshift < 1.00: text += 'Δ:{:+4.0f}mV'.format( 1000*self.__voltshift)
-    else:                               text += 'Δ:{:+4.1f} V'.format(      self.__voltshift)
+    self.__AScale = self.__vscale[self.gui.ScaleA.value()]
+    self.__AShift = 0.1 * self.__AScale * self.gui.ShiftA.value()
+    if         self.__AScale < 1.00: text  = 'A:{:4.0f}mV\n'.format(1000*self.__AScale)
+    else:                            text  = 'A:{:4.1f} V\n'.format(     self.__AScale)
+    if -1.00 < self.__AShift < 1.00: text += 'Δ:{:+4.0f}mV'.format( 1000*self.__AShift)
+    else:                            text += 'Δ:{:+4.1f} V'.format(      self.__AShift)
     self.__labels[0].set_text(text)
 
-    self.__timescale = self.__hscale[self.gui.HScale.value()]
-    self.__timeshift = 0.1 * self.__timescale * self.gui.Delay.value()
-    if         self.__timescale < 1e+3: text  = 'T:{:4.0f}ns\n'.format(     self.__timescale)
-    else:                               text  = 'T:{:4.0f}μs\n'.format(1e-3*self.__timescale)
-    if -1e+3 < self.__timeshift < 1e+3: text += 'Δ:{:+4.0f}ns'.format(       self.__timeshift)
-    else:                               text += 'Δ:{:+4.1f}μs'.format(  1e-3*self.__timeshift)
+    self.__BScale = self.__vscale[self.gui.ScaleB.value()]
+    self.__BShift = 0.1 * self.__BScale * self.gui.ShiftB.value()
+    if         self.__BScale < 1.00: text  = 'B:{:4.0f}mV\n'.format(1000*self.__BScale)
+    else:                            text  = 'B:{:4.1f} V\n'.format(     self.__BScale)
+    if -1.00 < self.__BShift < 1.00: text += 'Δ:{:+4.0f}mV'.format( 1000*self.__BShift)
+    else:                            text += 'Δ:{:+4.1f} V'.format(      self.__BShift)
+    self.__labels[1].set_text(text)
+
+    self.__TScale = self.__hscale[self.gui.ScaleT.value()]
+    self.__TShift = 0.1 * self.__TScale * self.gui.ShiftT.value()
+    if         self.__TScale < 1e+3: text  = 'T:{:4.0f}ns\n'.format(     self.__TScale)
+    else:                            text  = 'T:{:4.0f}μs\n'.format(1e-3*self.__TScale)
+    if -1e+3 < self.__TShift < 1e+3: text += 'Δ:{:+4.0f}ns'.format(      self.__TShift)
+    else:                            text += 'Δ:{:+4.1f}μs'.format( 1e-3*self.__TShift)
     self.__labels[3].set_text(text)    
 
-    onehalf = 3*self.__voltscale
+    onehalf = 3*self.__AScale
     if     onehalf < 1.00: text  = 'C₁={:+4.0f}mV\nC₀={:+4.0f}mV'.format(1000*onehalf,-1000*onehalf)
     else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,     -onehalf)
     self.__labels[2].set_text(text)    
