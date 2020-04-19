@@ -106,15 +106,14 @@ class DGTZ:
     return self.RQ(self.dpplib.CAENDPP_StopAcquisition(self.handle, c_int32(ch)))
 
   def IsBoardAcquiring(self):
-    isAcquiring = c_int32()
-    R = self.RQ(self.dpplib.CAENDPP_IsBoardAcquiring(self.handle, self.boardId, byref(isAcquiring)))
-    if R: return isAcquiring.value
+    R = self.RQ(self.dpplib.CAENDPP_IsBoardAcquiring(self.handle, self.boardId, byref(self.is_board_acq)))
+    if R: return self.is_board_acq.value
     else: return False
     
   def IsChannelAcquiring(self, ch):
     AcqStatus = c_enum()
-    R = self.RQ(self.dpplib.CAENDPP_IsChannelAcquiring(self.handle, c_int32(ch), byref(AcqStatus)))
-    if R: return AcqStatus.value
+    R = self.RQ(self.dpplib.CAENDPP_IsChannelAcquiring(self.handle, c_int32(ch), byref(self.is_chann_acq)))
+    if R: return self.is_chann_acq.value
     else: return False
     
   def GetWaveformLength(self, ch): 

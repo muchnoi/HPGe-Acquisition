@@ -20,6 +20,7 @@ class OscCanvas(FigureCanvas):
   __hscale  = [1e+2, 2e+2, 5e+2, 1e+3, 2e+3, 5e+3, 1e+4, 2e+4, 5e+4]
   __zero    = 0.0
   __gain    = 0.0
+  __single  = True
   
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
@@ -47,22 +48,25 @@ class OscCanvas(FigureCanvas):
     self.__zero, self.__gain = zero, gain
 #    print(zero,gain)
     
-  def Loop(self):
-    if self.gui.TriggerSingle.isChecked(): 
+  def ButtonPressed(self):
+    button        = self.gui.TriggerButton.text()
+    if  'Start' in button: 
+      self.Measure()
+      if not self.__single:
+        self.gui.TriggerButton.setText('Stop')
+        self.gui.timerB.start(499)
+        self.gui.timerB.timeout.connect(self.Measure)
+    elif 'Stop' in button: 
       self.gui.timerB.timeout.disconnect(self.Measure)
       self.gui.timerB.stop()
-      self.DPP.StopAcquisition(self.DPP.CH)
-    else:                                  
-      self.gui.timerB.start(499)
-      self.gui.timerB.timeout.connect(self.Measure)
-      self.DPP.StartAcquisition(self.DPP.CH)
-
+      self.gui.TriggerButton.setText('Start')
+    
   def Measure(self):
-    if self.gui.TriggerSingle.isChecked():  self.DPP.StartAcquisition(self.DPP.CH)
-    self._nsample, self._tsamp = self.DPP.GetWaveform(self.DPP.CH)
-    if self.gui.TriggerSingle.isChecked():  self.DPP.StopAcquisition(self.DPP.CH)
+    status                     = self.DPP.IsChannelAcquiring(self.DPP.CH)
+    if status is 0:              self.DPP.StartAcquisition(  self.DPP.CH)
+    self._nsample, self._tsamp = self.DPP.GetWaveform(       self.DPP.CH)
+    if self.__single:            self.DPP.StopAcquisition(   self.DPP.CH)
     self.Legend()
-  
  
   def Visualize(self):
     for to in range(self._nsample):
@@ -125,7 +129,7 @@ class OscCanvas(FigureCanvas):
     if self._nsample is None: self.draw()
     else:               self.Visualize()
 
-  def Trigger(self):
+  def Trigger(self, index):
     TL = self.gui.TriggerLevel.value()
     PT = self.gui.TriggerPrologue.value()                                                              # μs
     text = 'level:  {:5.0f}mV\npreamble: {:3.1f}μs'.format(1e+3*TL*self.__gain, PT)                    # mV, μs
@@ -135,10 +139,11 @@ class OscCanvas(FigureCanvas):
     self.DPP.boardConfig.DPPParams.a[ self.DPP.CH]        =          self.gui.TriggerSmoothing.value() # samples
     self.DPP.boardConfig.DPPParams.b[ self.DPP.CH]        = int(1e+3*self.gui.TriggerRiseTime.value()) # ns
     self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH]    = int(1e+3*self.gui.TriggerHoldoff.value())  # ns
-    self.DPP.trigger = int(self.gui.TriggerAuto.isChecked())
-#    if self.gui.TriggerAuto.isChecked(): self.DPP.trigger = 1
-#    else:                                self.DPP.trigger = 0
-    self.DPP.SetBoardConfiguration()
+    if index in (2,3):   self.DPP.trigger = 1
+    else:                self.DPP.trigger = 0
+    if index in (1,3,5): self.__single = True
+    else:                self.__single = False
+    self.DPP.Board_Reconfigure(self.DPP.CH)
     self.draw()
 #    if self._nsample is None: self.draw()
 #    else:               self.Visualize()

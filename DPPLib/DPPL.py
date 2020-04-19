@@ -19,6 +19,8 @@ class CAEN_DPP(HVPS, DGTZ):
   inputRanges    = [float(e) for e in DPP_Probes["InputRanges"]]
   boardInfo      = DPP_Info()
   Traces         = DPP_Traces()
+  is_board_acq   = c_int32()
+  is_chann_acq   = c_enum()
 #  DAQ_Info       = DPP_DAQInfo() # not supported ?
 
   def RQ(self, s): 
@@ -62,6 +64,11 @@ class CAEN_DPP(HVPS, DGTZ):
     self.acqcMode = c_enum(self.acqMode)
     return self.RQ(self.dpplib.CAENDPP_SetBoardConfiguration(self.handle, self.boardId,       self.acqcMode,        self.boardConfig))
       
+  def Board_Reconfigure(self, ch):
+    status = self.IsChannelAcquiring(ch)
+    if status is not 0: self.StopAcquisition(ch)
+    self.SetBoardConfiguration()
+    if status is not 0: self.StartAcquisition(ch)
 
   """
   def GetParametersNames(self):
