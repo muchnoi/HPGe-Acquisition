@@ -11,19 +11,26 @@ class TABs(CF, HV, OS, SP):
     self.DPP = DPPLib.CAEN_DPP()
     CF.__init__(self)
     self.gui.Tabs.setCurrentWidget(self.gui.tab_CF)
-    self.gui.Tabs.currentChanged.connect(self.Select_Tab)
+#    self.gui.Tabs.currentChanged.connect(self.Select_Tab)
     self.gui.timerA.start(999)
     self.gui.timerA.timeout.connect(self.Update_Tabs)
-    
-  def Select_Tab(self):
-    if   self.gui.tab_HV.isVisible(): HV.__init__(self)
-    elif self.gui.tab_OS.isVisible(): OS.__init__(self)
-    elif self.gui.tab_SP.isVisible(): SP.__init__(self)
+    self.already_connected = False   
+#  def Select_Tab(self):
+#    if   self.gui.tab_HV.isVisible(): HV.__init__(self)
+#    elif self.gui.tab_OS.isVisible(): OS.__init__(self)
+#    elif self.gui.tab_SP.isVisible(): SP.__init__(self)
     
   def Update_Tabs(self):
     if self.gui.Connect.isChecked(): #self.DPP.Connection:
-      if self.DPP.CheckBoardCommunication(): self.TABs123(True)
-      else: self.Disconnect()
+      if self.DPP.CheckBoardCommunication(): 
+        if not self.already_connected:
+          self.already_connected = True
+          HV.__init__(self)
+          OS.__init__(self)
+        self.TABs123(True)
+      else: 
+        self.Disconnect()
+        self.already_connected = False
     else: self.TABs123(False)
         
   def TABs123(self, v):     

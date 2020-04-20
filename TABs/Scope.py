@@ -21,6 +21,8 @@ class OscCanvas(FigureCanvas):
   __zero    = 0.0
   __gain    = 0.0
   __single  = True
+  __ticks   = [-3, -2, -1, 0, 1, 2, 3]
+  __zeros   = [ 0,  0,  0, 0, 0, 0, 0]
   
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
@@ -29,21 +31,28 @@ class OscCanvas(FigureCanvas):
     self.figure.subplotpars.top, self.figure.subplotpars.bottom = 0.995, 0.12
     self._plot_ref, self._nsample, self._tsamp = None, None, None
     for ch in range(5):
-      self.__labels[ch] = self.figure.text(0.025 + 0.18*ch, 0.025, "***", 
+      self.__labels[ch] = self.figure.text(0.025 + 0.19*ch, 0.025, "***", 
                                          color    = self.__colors[ch], 
                                          family   = 'monospace', 
                                          fontsize = 14)
     self.osc = self.figure.add_subplot(111)
+#    for el in dir(self.osc.Axes):
+#      if 'axis' in el:
+#        print(el)
 
   def Prepare(self, DPP, gui):  
     self.DPP = DPP
     self.gui = gui
-    self.osc.set_xlim(-4,  4);        self.osc.xaxis.set_ticklabels('')
-    self.osc.set_ylim(-4 , 4);        self.osc.yaxis.set_ticklabels('')
+    self.osc.set_xlim(-4,  4); self.osc.xaxis.set_ticklabels(''); self.osc.set_xticks(self.__ticks)
+    self.osc.set_ylim(-4 , 4); self.osc.yaxis.set_ticklabels(''); self.osc.set_yticks(self.__ticks)
     self.osc.set_autoscale_on(False); self.osc.set_axisbelow(False)
     self.osc.grid(ls = ':', c = 'w')
     self.osc.tick_params(direction='in', length=4, width=1, bottom=1, top=1, left=1, right=1)
+    self.osc.plot(self.__ticks, self.__zeros, 'y.')
+    self.osc.plot(self.__zeros, self.__ticks, 'y.')
 
+#    self.draw()
+    
   def Scale(self, zero, gain):
     self.__zero, self.__gain = zero, gain
 #    print(zero,gain)
@@ -54,38 +63,42 @@ class OscCanvas(FigureCanvas):
       self.Measure()
       if not self.__single:
         self.gui.TriggerButton.setText('Stop')
-        self.gui.timerB.start(499)
+        self.gui.timerB.start(250)
         self.gui.timerB.timeout.connect(self.Measure)
     elif 'Stop' in button: 
       self.gui.timerB.timeout.disconnect(self.Measure)
       self.gui.timerB.stop()
+      self.DPP.StopAcquisition(   self.DPP.CH)
       self.gui.TriggerButton.setText('Start')
     
   def Measure(self):
-    status                     = self.DPP.IsChannelAcquiring(self.DPP.CH)
-    if status is 0:              self.DPP.StartAcquisition(  self.DPP.CH)
+    status = self.DPP.IsChannelAcquiring(self.DPP.CH)
+    if   status is 0:     self.DPP.StartAcquisition(   self.DPP.CH)
+    elif status is False: self.gui.timerB.timeout.disconnect(self.Measure)
     self._nsample, self._tsamp = self.DPP.GetWaveform(       self.DPP.CH)
-    if self.__single:            self.DPP.StopAcquisition(   self.DPP.CH)
+    if self.__single:            
+      self.DPP.StopAcquisition(   self.DPP.CH)
     self.Legend()
  
   def Visualize(self):
     for to in range(self._nsample):
       if self.DPP.Traces.DT2[to]: break
-    PA,  QA  = self.__gain/self.__AScale, self.__AShift/self.__AScale
-    PB,  QB  = self.__gain/self.__BScale, self.__BShift/self.__BScale
-    PT,  QT  = self._tsamp/self.__TScale, self.__TShift/self.__TScale; QT -= to*PT
-    if self.DPP.boardConfig.WFParams.vp1 is 0: QA -= self.__zero * PA
-    if self.DPP.boardConfig.WFParams.vp2 is 0: QB -= self.__zero * PB
+    Ag,  Ao  = self.__gain/self.__AScale, self.__AShift/self.__AScale
+    Bg,  Bo  = self.__gain/self.__BScale, self.__BShift/self.__BScale
+    Tg,  To  = self._tsamp/self.__TScale, self.__TShift/self.__TScale; To -= to*Tg
+    if self.DPP.boardConfig.WFParams.vp1 is 0: Ao -= self.__zero * Ag
+    if self.DPP.boardConfig.WFParams.vp2 is 0: Bo -= self.__zero * Bg
     for t in range(self._nsample): 
-      self.__A[t] = PA * self.DPP.Traces.AT1[t] + QA
-      self.__B[t] = PB * self.DPP.Traces.AT2[t] + QB
+      self.__A[t] = Ag * self.DPP.Traces.AT1[t] + Ao
+      self.__B[t] = Bg * self.DPP.Traces.AT2[t] + Bo
       self.__C[t] = 6. * self.DPP.Traces.DT1[t] - 3.
-      self.__T[t] = PT *                     t  + QT
+      self.__T[t] = Tg *                     t  + To
 
     if self._plot_ref is None:
       A = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color=self.__colors[0])[0]
       B = self.osc.plot(self.__T[:self._nsample], self.__B[:self._nsample], '-', color=self.__colors[1])[0]
       C = self.osc.plot(self.__T[:self._nsample], self.__C[:self._nsample], '-', color=self.__colors[2])[0]
+#      D = self.osc.plot([-3.0, 3.0], [0.0, 0.0], '-', 'r')[0]
       self._plot_ref = [A, B, C]
     else:
       self._plot_ref[0].set_xdata(self.__T[:self._nsample])
@@ -126,23 +139,30 @@ class OscCanvas(FigureCanvas):
     else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,     -onehalf)
     self.__labels[2].set_text(text)    
     
-    if self._nsample is None: self.draw()
-    else:               self.Visualize()
+    if not self._nsample: self.draw()
+    else:                 self.Visualize()
 
-  def Trigger(self, index):
+  def Trigger(self):
     TL = self.gui.TriggerLevel.value()
-    PT = self.gui.TriggerPrologue.value()                                                              # μs
-    text = 'level:  {:5.0f}mV\npreamble: {:3.1f}μs'.format(1e+3*TL*self.__gain, PT)                    # mV, μs
+    PT = self.gui.TriggerIntro.value()                                   # μs
+    self.DPP.boardConfig.DPPParams.thr[self.DPP.CH]       = TL           # lsb
+    self.DPP.boardConfig.WFParams.preTrigger              = int(2e+3*PT) # ns
+    TL *= self.__gain
+    if TL < 0.999: text  = 'level: {:3.0f} mV\n'.format(1e+3*TL)
+    else:          text  = 'level: {:4.2f} V\n'.format(      TL)
+    if PT < 0.999: text += 'intro: {:3.0f} ns'.format(  1e+3*PT)
+    else:          text += 'intro: {:3.1f} μs'.format(       PT)
     self.__labels[4].set_text(text)
-    self.DPP.boardConfig.DPPParams.thr[self.DPP.CH]       = TL                                         # lsb
-    self.DPP.boardConfig.WFParams.preTrigger              = int(2e+3*PT)                               # ns
     self.DPP.boardConfig.DPPParams.a[ self.DPP.CH]        =          self.gui.TriggerSmoothing.value() # samples
     self.DPP.boardConfig.DPPParams.b[ self.DPP.CH]        = int(1e+3*self.gui.TriggerRiseTime.value()) # ns
     self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH]    = int(1e+3*self.gui.TriggerHoldoff.value())  # ns
-    if index in (2,3):   self.DPP.trigger = 1
-    else:                self.DPP.trigger = 0
-    if index in (1,3,5): self.__single = True
-    else:                self.__single = False
+
+    mode = self.gui.TriggerMode.currentIndex()
+    if   mode in (2,3,4,5): self.DPP.trigger = 1 # auto trigger (now external = auto)
+    elif mode in (0,1):     self.DPP.trigger = 0 # normal trigger
+    if   mode in (1,3,5):   self.__single = True # single shot
+    elif mode in (0,2,4):   self.__single = False
+
     self.DPP.Board_Reconfigure(self.DPP.CH)
     self.draw()
 #    if self._nsample is None: self.draw()

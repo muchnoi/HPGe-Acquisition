@@ -799,6 +799,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="DCoffsetSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -827,6 +833,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="FineGainSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -905,6 +917,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QComboBox" name="Virtual_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Sans</family>
@@ -968,6 +986,12 @@ margin-top: 1 1ex;}
                  </property>
                  <item>
                   <widget class="QDoubleSpinBox" name="RiseTimeSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -984,6 +1008,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="DecayTimeSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1000,6 +1030,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="FlatTopSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1016,6 +1052,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="PeakDelaySpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1032,6 +1074,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QSpinBox" name="PeakMeanSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1048,6 +1096,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="PeakHoldoffSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1064,6 +1118,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QSpinBox" name="BaseMeanSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1080,6 +1140,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="BaseHoldoffSpinBox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1458,10 +1524,19 @@ margin-top: 1 1ex;}
                  <item>
                   <widget class="QDial" name="TriggerLevel">
                    <property name="minimum">
-                    <number>6</number>
+                    <number>0</number>
                    </property>
                    <property name="maximum">
-                    <number>10000</number>
+                    <number>16383</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>4</number>
+                   </property>
+                   <property name="pageStep">
+                    <number>16</number>
+                   </property>
+                   <property name="value">
+                    <number>0</number>
                    </property>
                   </widget>
                  </item>
@@ -1535,6 +1610,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="TriggerRiseTime">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1554,6 +1635,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="TriggerHoldoff">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1578,7 +1665,13 @@ margin-top: 1 1ex;}
                   </widget>
                  </item>
                  <item>
-                  <widget class="QDoubleSpinBox" name="TriggerPrologue">
+                  <widget class="QDoubleSpinBox" name="TriggerIntro">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
@@ -1586,7 +1679,7 @@ margin-top: 1 1ex;}
                     </font>
                    </property>
                    <property name="prefix">
-                    <string>Preamble:  </string>
+                    <string>Intro:     </string>
                    </property>
                    <property name="suffix">
                     <string> μs</string>
@@ -1604,6 +1697,12 @@ margin-top: 1 1ex;}
                  </item>
                  <item>
                   <widget class="QSpinBox" name="TriggerSmoothing">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>

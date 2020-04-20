@@ -1,7 +1,4 @@
 class TAB_OS:
-  _ADC     = 16383. # i. e. 14-bit ADC
-  _zero    = 0.0    # ADC channel for V_Input = 0.0
-  _gain    = 0.0    # i. e. [V / channel]
 
   def __init__(self):
     self.DPP.acqMode = 0 # Waveform = 0, Histogram = 1
@@ -10,10 +7,14 @@ class TAB_OS:
     self.DPP.boardConfig.ChannelMask = self.DPP.CH+1
     self.DPP.Board_Reconfigure(self.DPP.CH)
     self.gui.QScope.Prepare(self.DPP, self.gui)
-    self.__ADC() # tells QScope zero and gain parameters
+#    self.__ADC() # tells QScope zero and gain parameters
     
 #    self.DPP.StartAcquisition(self.DPP.CH)
-    
+    self.gui.InputRange.clear()
+    self.gui.Virtual_1.clear()
+    self.gui.Virtual_2.clear()
+    self.gui.Digital_1.clear()
+    self.gui.InputPolarity.clear()
     for k,v in self.DPP.GetInfoDict("InputRangeNum", "InputRanges").items(): 
       self.gui.InputRange.addItem('Range: {} V'.format(k), userData = v)
     for k,v in self.DPP.GetInfoDict("NumVirtualProbes1", "SupportedVirtualProbes1").items(): 
@@ -57,25 +58,26 @@ class TAB_OS:
     self.gui.BaseMeanSpinBox.valueChanged.connect(    self.__SpinBox_Value_Changed)
     self.gui.BaseHoldoffSpinBox.valueChanged.connect( self.__SpinBox_Value_Changed)
 
+    self.gui.TriggerMode.clear()
     self.gui.TriggerMode.addItem('Mode: normal',       userData = 0)
     self.gui.TriggerMode.addItem('Mode: norm. single', userData = 1)
     self.gui.TriggerMode.addItem('Mode: auto',         userData = 2)
     self.gui.TriggerMode.addItem('Mode: auto single',  userData = 3)
     self.gui.TriggerMode.addItem('Mode: external',     userData = 4)
     self.gui.TriggerMode.addItem('Mode: ext. single',  userData = 5)
+    self.gui.TriggerSmoothing.setValue(     self.DPP.boardConfig.DPPParams.a[ self.DPP.CH])
+    self.gui.TriggerRiseTime.setValue( 1e-3*self.DPP.boardConfig.DPPParams.b[ self.DPP.CH])
+    self.gui.TriggerHoldoff.setValue(  1e-3*self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH])
+    self.gui.TriggerLevel.setValue(         self.DPP.boardConfig.DPPParams.thr[ self.DPP.CH])
+    self.gui.TriggerIntro.setValue( .5*1e-3*self.DPP.boardConfig.WFParams.preTrigger)
+    self.gui.TriggerButton.clicked.connect(          self.gui.QScope.ButtonPressed)
     self.gui.TriggerMode.currentIndexChanged.connect(self.gui.QScope.Trigger)
-    self.gui.TriggerSmoothing.setValue(       self.DPP.boardConfig.DPPParams.a[ self.DPP.CH])
-    self.gui.TriggerRiseTime.setValue(   1e-3*self.DPP.boardConfig.DPPParams.b[ self.DPP.CH])
-    self.gui.TriggerHoldoff.setValue(    1e-3*self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH])
-    self.gui.TriggerLevel.setValue(           self.DPP.boardConfig.DPPParams.thr[ self.DPP.CH])
-    self.gui.TriggerPrologue.setValue(.5*1e-3*self.DPP.boardConfig.WFParams.preTrigger)
-    self.gui.TriggerButton.clicked.connect(        self.gui.QScope.ButtonPressed)
-    self.gui.TriggerLevel.valueChanged.connect(    self.gui.QScope.Trigger)
-    self.gui.TriggerPrologue.valueChanged.connect( self.gui.QScope.Trigger)
-    self.gui.TriggerSmoothing.valueChanged.connect(self.gui.QScope.Trigger)
-    self.gui.TriggerRiseTime.valueChanged.connect( self.gui.QScope.Trigger)
-    self.gui.TriggerHoldoff.valueChanged.connect(  self.gui.QScope.Trigger)
-    self.gui.QScope.Trigger(True)
+    self.gui.TriggerLevel.valueChanged.connect(      self.gui.QScope.Trigger)
+    self.gui.TriggerIntro.valueChanged.connect(      self.gui.QScope.Trigger)
+    self.gui.TriggerSmoothing.valueChanged.connect(  self.gui.QScope.Trigger)
+    self.gui.TriggerRiseTime.valueChanged.connect(   self.gui.QScope.Trigger)
+    self.gui.TriggerHoldoff.valueChanged.connect(    self.gui.QScope.Trigger)
+    self.__ADC()
 
     self.gui.ScaleA.valueChanged.connect(self.gui.QScope.Legend)
     self.gui.ShiftA.valueChanged.connect(self.gui.QScope.Legend)
@@ -112,9 +114,10 @@ class TAB_OS:
     elif POL is 1: 
       if DCO < 25000: zero = -606.92 + 0.272018 * DCO  # negative polarity
       else:           zero = -653.33 + 0.274035 * DCO  # negative polarity
-    gain = self.DPP.inputRanges[INR]/self._ADC         # i.e. Volts / LSB
+    gain = self.DPP.inputRanges[INR]/2**self.DPP.boardInfo.ADC_NBits
     self.gui.QScope.Scale(zero, gain)
-    
+    self.gui.QScope.Legend()
+    self.gui.QScope.Trigger()
 
   def __IRC(self, index): # input range control
     self.DPP.inputRange[self.DPP.CH] = self.gui.InputRange.itemData(index)
