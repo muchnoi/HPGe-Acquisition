@@ -72,13 +72,15 @@ class OscCanvas(FigureCanvas):
       self.gui.TriggerButton.setText('Start')
     
   def Measure(self):
-    status = self.DPP.IsChannelAcquiring(self.DPP.CH)
-    if   status is 0:     self.DPP.StartAcquisition(   self.DPP.CH)
-    elif status is False: self.gui.timerB.timeout.disconnect(self.Measure)
-    self._nsample, self._tsamp = self.DPP.GetWaveform(       self.DPP.CH)
-    if self.__single:            
-      self.DPP.StopAcquisition(   self.DPP.CH)
-    self.Legend()
+    if self.gui.tab_OS.isHidden(): self.ButtonPressed()
+    else:
+      status = self.DPP.IsChannelAcquiring(self.DPP.CH)
+      if   status is 0:      self.DPP.StartAcquisition( self.DPP.CH)
+      elif status is False:  self.gui.timerB.timeout.disconnect(self.Measure)
+      self._nsample, self._tsamp = self.DPP.GetWaveform(self.DPP.CH)
+      if self.__single:            
+        self.DPP.StopAcquisition(   self.DPP.CH)
+      self.Legend()
  
   def Visualize(self):
     for to in range(self._nsample):

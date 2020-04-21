@@ -39,9 +39,7 @@ class TAB_HV:
     self.gui.timerA.timeout.connect(    self.__Update_HV)
 
   def __Update_HV(self):
-    if self.gui.tab_HV.isHidden(): 
-      self.gui.timerA.timeout.disconnect(self.__Update_HV)
-    else:
+    if self.gui.tab_HV.isVisible(): 
       V, I = self.DPP.ReadHVChannelMonitoring(self.DPP.CH)
       if V is False:
         self.Disconnect()

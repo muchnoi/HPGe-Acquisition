@@ -12,7 +12,7 @@ class TABs(CF, HV, OS, SP):
     CF.__init__(self)
     self.gui.Tabs.setCurrentWidget(self.gui.tab_CF)
 #    self.gui.Tabs.currentChanged.connect(self.Select_Tab)
-    self.gui.timerA.start(999)
+    self.gui.timerA.start(1000)
     self.gui.timerA.timeout.connect(self.Update_Tabs)
     self.already_connected = False   
 #  def Select_Tab(self):
