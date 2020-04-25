@@ -48,10 +48,10 @@ DPP_ErrorCode = {  0 : "Operation completed successfully",
                 -143 : "Calibration Error",
                 -144 : "Event read error"}
 
-DPP_Probes = {"SupportedVirtualProbes1" : ["Input", "Delta", "Delta2", "Trapezoid", "FastTrap", 
+DPP_Probes = {"SupportedVirtualProbes1" : ["Input", "RC-CR", "RC-CR²", "Trapezoid", "FastTrap", 
                                            "Trap Baseline", "Energy Out", "Baseline Correction", "None"],
               "SupportedVirtualProbes2" : ["Input", "Threshold?", "Trap Baseline Corr", "Trap BaseLine", "None", 
-                                           "Delta", "FastTrap", "Delta2", "Trapezoid", "Energy Out"],
+                                           "RC_CR", "FastTrap", "RC-CR²", "Trapezoid", "Energy Out"],
               "SupportedDigitalProbes1" : ["Trigger Window", "Armed", "Peak Run", "Pileup Flag", "Peaking", 
                                            "Trigger Validation Acceptance Window", "Baseline Holdoff", "Trigger Holdoff", 
                                            "Trigger Value", "Acquisition Veto", "BFMVeto", "External Trigger", "Trigger", 

@@ -16,8 +16,8 @@ class OscCanvas(FigureCanvas):
   __T       = ArrayType() # Scope T
   __colors  = ['#FF1493', '#7FFF00', '#00FFFF', '#FFFF00', '#F4A460']
   __labels  = ['']*5
-  __vscale  = [1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.00, 2.00, 5.00]
-  __hscale  = [1e+2, 2e+2, 5e+2, 1e+3, 2e+3, 5e+3, 1e+4, 2e+4, 5e+4]
+  __vscale  = [1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.00, 2.00, 5.00]; __vscale.reverse()
+  __hscale  = [1e+2, 2e+2, 5e+2, 1e+3, 2e+3, 5e+3, 1e+4, 2e+4, 5e+4]; __hscale.reverse()
   __zero    = 0.0
   __gain    = 0.0
   __single  = True
@@ -87,21 +87,35 @@ class OscCanvas(FigureCanvas):
       if self.DPP.Traces.DT2[to]: break
     Ag,  Ao  = self.__gain/self.__AScale, self.__AShift/self.__AScale
     Bg,  Bo  = self.__gain/self.__BScale, self.__BShift/self.__BScale
-    Tg,  To  = self._tsamp/self.__TScale, self.__TShift/self.__TScale; To -= to*Tg
-    if self.DPP.boardConfig.WFParams.vp1 is 0: Ao -= self.__zero * Ag
-    if self.DPP.boardConfig.WFParams.vp2 is 0: Bo -= self.__zero * Bg
+    Tg,  To  = self._tsamp/self.__TScale, self.__TShift/self.__TScale
+    if self.DPP.boardConfig.WFParams.vp1 is 0: As = self.__zero * Ag
+    else:                                      As = 0.0
+    if self.DPP.boardConfig.WFParams.vp2 is 0: Bs = self.__zero * Bg
+    else:                                      Bs = 0.0
     for t in range(self._nsample): 
-      self.__A[t] = Ag * self.DPP.Traces.AT1[t] + Ao
-      self.__B[t] = Bg * self.DPP.Traces.AT2[t] + Bo
+      self.__A[t] = Ag * self.DPP.Traces.AT1[t] + Ao - As
+      self.__B[t] = Bg * self.DPP.Traces.AT2[t] + Bo - Bs
       self.__C[t] = 6. * self.DPP.Traces.DT1[t] - 3.
-      self.__T[t] = Tg *                     t  + To
+      self.__T[t] = Tg *                     t  + To - to*Tg
+    lim = 3.95
+    if -lim <= To <= lim: self.__Tz = [To]
+    elif       To < -lim: self.__Tz = [-lim]
+    elif       To >  lim: self.__Tz = [ lim]
+    if -lim <= Ao <= lim: self.__Az = [Ao]
+    elif       Ao < -lim: self.__Az = [-lim]
+    elif       Ao >  lim: self.__Az = [ lim]
+    if -lim <= Bo <= lim: self.__Bz = [Bo]
+    elif       Bo < -lim: self.__Bz = [-lim]
+    elif       Bo >  lim: self.__Bz = [ lim]
 
     if self._plot_ref is None:
       A = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color=self.__colors[0])[0]
       B = self.osc.plot(self.__T[:self._nsample], self.__B[:self._nsample], '-', color=self.__colors[1])[0]
       C = self.osc.plot(self.__T[:self._nsample], self.__C[:self._nsample], '-', color=self.__colors[2])[0]
-#      D = self.osc.plot([-3.0, 3.0], [0.0, 0.0], '-', 'r')[0]
-      self._plot_ref = [A, B, C]
+      D = self.osc.plot([-lim], self.__Az, '>', color=self.__colors[0])[0]
+      E = self.osc.plot([-lim], self.__Bz, '>', color=self.__colors[1])[0]
+      F = self.osc.plot(self.__Tz, [-lim], '^', color=self.__colors[3])[0]
+      self._plot_ref = [A, B, C, D, E, F]
     else:
       self._plot_ref[0].set_xdata(self.__T[:self._nsample])
       self._plot_ref[0].set_ydata(self.__A[:self._nsample])
@@ -109,6 +123,9 @@ class OscCanvas(FigureCanvas):
       self._plot_ref[1].set_ydata(self.__B[:self._nsample])
       self._plot_ref[2].set_xdata(self.__T[:self._nsample])
       self._plot_ref[2].set_ydata(self.__C[:self._nsample])
+      self._plot_ref[3].set_ydata(self.__Az)
+      self._plot_ref[4].set_ydata(self.__Bz)
+      self._plot_ref[5].set_xdata(self.__Tz)
     self.draw()
 
   def Legend(self):
