@@ -50,9 +50,12 @@ class TAB_CF:
       
 	
   def Channel_Select(self):
-    if   self.gui.Select_CH0.isChecked(): self.DPP.CH = 0
-    elif self.gui.Select_CH1.isChecked(): self.DPP.CH = 1
-      
+    if   self.gui.Select_CH0.isChecked(): 
+      self.gui.Select_CH0.setChecked(True)
+      self.DPP.CH = 0
+    elif self.gui.Select_CH1.isChecked(): 
+      self.gui.Select_CH1.setChecked(True)
+      self.DPP.CH = 1
 
 
 

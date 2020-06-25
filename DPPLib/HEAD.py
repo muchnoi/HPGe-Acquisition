@@ -50,7 +50,7 @@ DPP_ErrorCode = {  0 : "Operation completed successfully",
 
 DPP_Probes = {"SupportedVirtualProbes1" : ["Input", "RC-CR", "RC-CR²", "Trapezoid", "FastTrap", 
                                            "Trap Baseline", "Energy Out", "Baseline Correction", "None"],
-              "SupportedVirtualProbes2" : ["Input", "Threshold?", "Trap Baseline Corr", "Trap BaseLine", "None", 
+              "SupportedVirtualProbes2" : ["Input", "Threshold", "Trapezoid", "Trapezoid BaseLine", "None", 
                                            "RC_CR", "FastTrap", "RC-CR²", "Trapezoid", "Energy Out"],
               "SupportedDigitalProbes1" : ["Trigger Window", "Armed", "Peak Run", "Pileup Flag", "Peaking", 
                                            "Trigger Validation Acceptance Window", "Baseline Holdoff", "Trigger Holdoff", 
@@ -79,7 +79,7 @@ class DPP_ConnectionParams(Structure):
               ("ETHAddress",     c_char*(IP_ADDR_LEN+1)))
 
 class DPP_ParamInfo(Structure):
-  MAX_LIST_VALS = 15 # !!! MAX_LIST_VALS = 15 in DPPLIB manual. But such value causes a core dump !!! 
+  MAX_LIST_VALS = 15 
   Units =     ("NanoSeconds", "Samples", "Adimensional", "MicroAmpere", "Volt", "VoltsPerSecond", "Ohm")
   Types =     ("Range", "List")
   _fields_ = (("type",           c_enum),

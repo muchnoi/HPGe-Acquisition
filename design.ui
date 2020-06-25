@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1082</width>
-    <height>838</height>
+    <width>1085</width>
+    <height>902</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -67,7 +67,7 @@ QDoubleSpinBox {background-color: #FFFFFF;}
 </string>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_CF">
        <property name="font">
@@ -650,16 +650,7 @@ margin-top: 1 1ex;}
            <property name="spacing">
             <number>2</number>
            </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -674,16 +665,7 @@ margin-top: 1 1ex;}
               <number>2</number>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_22">
-              <property name="leftMargin">
-               <number>2</number>
-              </property>
-              <property name="topMargin">
-               <number>2</number>
-              </property>
-              <property name="rightMargin">
-               <number>2</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>2</number>
               </property>
               <item>
@@ -725,16 +707,7 @@ margin-top: 1 1ex;}
               <property name="spacing">
                <number>0</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1187,16 +1160,7 @@ margin-top: 1 1ex;}
            <property name="spacing">
             <number>0</number>
            </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -1211,16 +1175,7 @@ margin-top: 1 1ex;}
               <string>Vertical A</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_5">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <property name="spacing">
@@ -1300,16 +1255,7 @@ margin-top: 1 1ex;}
               <string>Vertical B</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_8">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <property name="spacing">
@@ -1396,16 +1342,7 @@ margin-top: 1 1ex;}
               <string>Horizontal</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <property name="spacing">
@@ -1494,16 +1431,7 @@ margin-top: 1 1ex;}
               <property name="spacing">
                <number>0</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1748,7 +1676,7 @@ margin-top: 1 1ex;}
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1082</width>
+     <width>1085</width>
      <height>29</height>
     </rect>
    </property>
@@ -1761,6 +1689,15 @@ margin-top: 1 1ex;}
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuWaveform_Settings">
+     <property name="title">
+      <string>Waveform Settings</string>
+     </property>
+     <addaction name="actionSave_WF"/>
+     <addaction name="actionBack_to_Saved"/>
+     <addaction name="actionBack_to_Default"/>
+    </widget>
+    <addaction name="menuWaveform_Settings"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1781,6 +1718,26 @@ margin-top: 1 1ex;}
    </property>
    <property name="menuRole">
     <enum>QAction::QuitRole</enum>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_WF">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionBack_to_Saved">
+   <property name="text">
+    <string>Back to Saved</string>
+   </property>
+  </action>
+  <action name="actionBack_to_Default">
+   <property name="text">
+    <string>Back to Default</string>
    </property>
   </action>
  </widget>

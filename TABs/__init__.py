@@ -11,22 +11,31 @@ class TABs(CF, HV, OS, SP):
     self.DPP = DPPLib.CAEN_DPP()
     CF.__init__(self)
     self.gui.Tabs.setCurrentWidget(self.gui.tab_CF)
-#    self.gui.Tabs.currentChanged.connect(self.Select_Tab)
+
+    self.gui.menuWaveform_Settings.setDisabled(True)
+    self.gui.actionSave_WF.triggered.connect(self.DPP.Save_DGTZ_Parameters)
+    self.gui.actionBack_to_Saved.triggered.connect(self.Read_Scope_Parameters)
+    self.gui.actionBack_to_Default.triggered.connect(self.Init_Scope_Parameters)
+
+    self.gui.Tabs.currentChanged.connect(self.Select_Tab)
     self.gui.timerA.start(1000)
     self.gui.timerA.timeout.connect(self.Update_Tabs)
     self.already_connected = False   
-#  def Select_Tab(self):
-#    if   self.gui.tab_HV.isVisible(): HV.__init__(self)
-#    elif self.gui.tab_OS.isVisible(): OS.__init__(self)
-#    elif self.gui.tab_SP.isVisible(): SP.__init__(self)
+
+  def Select_Tab(self):
+    if     self.gui.tab_OS.isVisible(): 
+      OS.__init__(self)
+      self.gui.menuWaveform_Settings.setDisabled(False)
+    else:
+      self.gui.menuWaveform_Settings.setDisabled(True)
+      if   self.gui.tab_HV.isVisible(): HV.__init__(self)
+      elif self.gui.tab_SP.isVisible(): SP.__init__(self)
     
   def Update_Tabs(self):
     if self.gui.Connect.isChecked(): #self.DPP.Connection:
       if self.DPP.CheckBoardCommunication(): 
         if not self.already_connected:
           self.already_connected = True
-          HV.__init__(self)
-          OS.__init__(self)
         self.TABs123(True)
       else: 
         self.Disconnect()

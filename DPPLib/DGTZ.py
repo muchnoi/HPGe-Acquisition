@@ -7,15 +7,16 @@ import pickle
 class DGTZ:
 
   def Read_DGTZ_Parameters(self):
-    DP = False
-    for atmpt in [0,1]:
-      try:     
-        with open('dgtz.pickle', 'rb') as fp: DP = pickle.load(fp)
-      except FileNotFoundError:        self.Init_DGTZ_Parameters()
-      if DP: self.boardConfig = DP; break
+    try:     
+      with open('dgtz.pickle', 'rb') as fp: 
+        self.inputRange, self.boardConfig = pickle.load(fp)
+    except FileNotFoundError:        
+      self.Init_DGTZ_Parameters()
 
-  def Save_DGTZ_Parameters(self, DP):
-    with open('dgtz.pickle', 'wb') as fp: pickle.dump(DP, fp)
+  def Save_DGTZ_Parameters(self):
+#    self.GetBoardConfiguration()
+    with open('dgtz.pickle', 'wb') as fp: 
+      pickle.dump([self.inputRange, self.boardConfig], fp)
 
   def Init_DGTZ_Parameters(self):
     DP = self.boardConfig
@@ -87,7 +88,11 @@ class DGTZ:
       DP.DPPParams.X770_extra[ch].trigMODE          = 0
       DP.SpectrumControl[ch].SpectrumMode           = 0 # CAENDPP_SpectrumMode_Energy
       DP.SpectrumControl[ch].TimeScale              = 1
-    self.Save_DGTZ_Parameters(DP)
+#    return DP
+#    print(self.boardConfig.DPPParams.M[0], self.boardConfig.DPPParams.M[1])
+#    self.boardConfig = DP
+#    print(self.boardConfig.DPPParams.M[0], self.boardConfig.DPPParams.M[1])
+#    self.Save_DGTZ_Parameters()
 
   def GetInputRange(self, ch):
     ir = c_enum()

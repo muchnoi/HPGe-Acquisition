@@ -28,7 +28,7 @@ class OscCanvas(FigureCanvas):
     fig = Figure(figsize=(width, height), dpi=dpi)
     FigureCanvas.__init__(self, fig)
     self.figure.subplotpars.left, self.figure.subplotpars.right = 0.005, 0.995
-    self.figure.subplotpars.top, self.figure.subplotpars.bottom = 0.995, 0.12
+    self.figure.subplotpars.top, self.figure.subplotpars.bottom = 0.995, 0.120
     self._plot_ref, self._nsample, self._tsamp = None, None, None
     for ch in range(5):
       self.__labels[ch] = self.figure.text(0.025 + 0.19*ch, 0.025, "***", 
@@ -48,14 +48,11 @@ class OscCanvas(FigureCanvas):
     self.osc.set_autoscale_on(False); self.osc.set_axisbelow(False)
     self.osc.grid(ls = ':', c = 'w')
     self.osc.tick_params(direction='in', length=4, width=1, bottom=1, top=1, left=1, right=1)
-    self.osc.plot(self.__ticks, self.__zeros, 'y.')
-    self.osc.plot(self.__zeros, self.__ticks, 'y.')
-
-#    self.draw()
+    self.osc.plot(self.__ticks, self.__zeros, 'y.', markersize=7)
+    self.osc.plot(self.__zeros, self.__ticks, 'y.', markersize=7)
     
   def Scale(self, zero, gain):
     self.__zero, self.__gain = zero, gain
-#    print(zero,gain)
     
   def ButtonPressed(self):
     button        = self.gui.TriggerButton.text()
@@ -78,8 +75,7 @@ class OscCanvas(FigureCanvas):
       if   status is 0:      self.DPP.StartAcquisition( self.DPP.CH)
       elif status is False:  self.gui.timerB.timeout.disconnect(self.Measure)
       self._nsample, self._tsamp = self.DPP.GetWaveform(self.DPP.CH)
-      if self.__single:            
-        self.DPP.StopAcquisition(   self.DPP.CH)
+      if self.__single:      self.DPP.StopAcquisition(   self.DPP.CH)
       self.Legend()
  
   def Visualize(self):
@@ -109,12 +105,12 @@ class OscCanvas(FigureCanvas):
     elif       Bo >  lim: self.__Bz = [ lim]
 
     if self._plot_ref is None:
-      A = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color=self.__colors[0])[0]
-      B = self.osc.plot(self.__T[:self._nsample], self.__B[:self._nsample], '-', color=self.__colors[1])[0]
-      C = self.osc.plot(self.__T[:self._nsample], self.__C[:self._nsample], '-', color=self.__colors[2])[0]
-      D = self.osc.plot([-lim], self.__Az, '>', color=self.__colors[0])[0]
-      E = self.osc.plot([-lim], self.__Bz, '>', color=self.__colors[1])[0]
-      F = self.osc.plot(self.__Tz, [-lim], '^', color=self.__colors[3])[0]
+      A = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color = self.__colors[0])[0]
+      B = self.osc.plot(self.__T[:self._nsample], self.__B[:self._nsample], '-', color = self.__colors[1])[0]
+      C = self.osc.plot(self.__T[:self._nsample], self.__C[:self._nsample], '-', color = self.__colors[2])[0]
+      D = self.osc.plot([-lim], self.__Az, '>', color = self.__colors[0])[0]
+      E = self.osc.plot([-lim], self.__Bz, '>', color = self.__colors[1])[0]
+      F = self.osc.plot(self.__Tz, [-lim], '^', color = self.__colors[3])[0]
       self._plot_ref = [A, B, C, D, E, F]
     else:
       self._plot_ref[0].set_xdata(self.__T[:self._nsample])
@@ -131,26 +127,26 @@ class OscCanvas(FigureCanvas):
   def Legend(self):
     self.__AScale = self.__vscale[self.gui.ScaleA.value()]
     self.__AShift = 0.1 * self.__AScale * self.gui.ShiftA.value()
-    if         self.__AScale < 1.00: text  = 'A:{:4.0f}mV\n'.format(1000*self.__AScale)
-    else:                            text  = 'A:{:4.1f} V\n'.format(     self.__AScale)
-    if -1.00 < self.__AShift < 1.00: text += 'Δ:{:+4.0f}mV'.format( 1000*self.__AShift)
-    else:                            text += 'Δ:{:+4.1f} V'.format(      self.__AShift)
+    if         self.__AScale < 1.00: text = 'A:{:4.0f}mV\n'.format(1000*self.__AScale)
+    else:                            text = 'A:{:4.1f} V\n'.format(     self.__AScale)
+    if -1.00 < self.__AShift < 1.00: text += 'Δ:{:+4.0f}mV'.format(1000*self.__AShift)
+    else:                            text += 'Δ:{:+4.1f} V'.format(     self.__AShift)
     self.__labels[0].set_text(text)
 
     self.__BScale = self.__vscale[self.gui.ScaleB.value()]
     self.__BShift = 0.1 * self.__BScale * self.gui.ShiftB.value()
-    if         self.__BScale < 1.00: text  = 'B:{:4.0f}mV\n'.format(1000*self.__BScale)
-    else:                            text  = 'B:{:4.1f} V\n'.format(     self.__BScale)
-    if -1.00 < self.__BShift < 1.00: text += 'Δ:{:+4.0f}mV'.format( 1000*self.__BShift)
-    else:                            text += 'Δ:{:+4.1f} V'.format(      self.__BShift)
+    if         self.__BScale < 1.00: text = 'B:{:4.0f}mV\n'.format(1000*self.__BScale)
+    else:                            text = 'B:{:4.1f} V\n'.format(     self.__BScale)
+    if -1.00 < self.__BShift < 1.00: text += 'Δ:{:+4.0f}mV'.format(1000*self.__BShift)
+    else:                            text += 'Δ:{:+4.1f} V'.format(     self.__BShift)
     self.__labels[1].set_text(text)
 
     self.__TScale = self.__hscale[self.gui.ScaleT.value()]
     self.__TShift = 0.1 * self.__TScale * self.gui.ShiftT.value()
-    if         self.__TScale < 1e+3: text  = 'T:{:4.0f}ns\n'.format(     self.__TScale)
-    else:                            text  = 'T:{:4.0f}μs\n'.format(1e-3*self.__TScale)
-    if -1e+3 < self.__TShift < 1e+3: text += 'Δ:{:+4.0f}ns'.format(      self.__TShift)
-    else:                            text += 'Δ:{:+4.1f}μs'.format( 1e-3*self.__TShift)
+    if         self.__TScale < 1e+3: text = 'T:{:4.0f}ns\n'.format(     self.__TScale)
+    else:                            text = 'T:{:4.0f}μs\n'.format(1e-3*self.__TScale)
+    if -1e+3 < self.__TShift < 1e+3: text += 'Δ:{:+4.0f}ns'.format(     self.__TShift)
+    else:                            text += 'Δ:{:+4.1f}μs'.format(1e-3*self.__TShift)
     self.__labels[3].set_text(text)    
 
     onehalf = 3*self.__AScale
@@ -162,30 +158,29 @@ class OscCanvas(FigureCanvas):
     else:                 self.Visualize()
 
   def Trigger(self):
-    TL = self.gui.TriggerLevel.value()
-    PT = self.gui.TriggerIntro.value()                                   # μs
-    self.DPP.boardConfig.DPPParams.thr[self.DPP.CH]       = TL           # lsb
-    self.DPP.boardConfig.WFParams.preTrigger              = int(2e+3*PT) # ns
-    TL *= self.__gain
-    if TL < 0.999: text  = 'level: {:3.0f} mV\n'.format(1e+3*TL)
-    else:          text  = 'level: {:4.2f} V\n'.format(      TL)
-    if PT < 0.999: text += 'intro: {:3.0f} ns'.format(  1e+3*PT)
-    else:          text += 'intro: {:3.1f} μs'.format(       PT)
-    self.__labels[4].set_text(text)
-    self.DPP.boardConfig.DPPParams.a[ self.DPP.CH]        =          self.gui.TriggerSmoothing.value() # samples
-    self.DPP.boardConfig.DPPParams.b[ self.DPP.CH]        = int(1e+3*self.gui.TriggerRiseTime.value()) # ns
-    self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH]    = int(1e+3*self.gui.TriggerHoldoff.value())  # ns
+    if not self.gui.fill_initials:
+      TL = self.gui.TriggerLevel.value()
+      PT = self.gui.TriggerIntro.value()                                   # μs
+      self.DPP.boardConfig.DPPParams.thr[self.DPP.CH]       = TL           # lsb
+      self.DPP.boardConfig.WFParams.preTrigger              = int(2e+3*PT) # ns
+      TL *= self.__gain
+      if TL < 0.999: text  = 'level: {:3.0f} mV\n'.format(1e+3*TL)
+      else:          text  = 'level: {:4.2f} V\n'.format(      TL)
+      if PT < 0.999: text += 'intro: {:3.0f} ns'.format(  1e+3*PT)
+      else:          text += 'intro: {:3.1f} μs'.format(       PT)
+      self.__labels[4].set_text(text)
+      self.DPP.boardConfig.DPPParams.a[ self.DPP.CH]        =          self.gui.TriggerSmoothing.value() # samples
+      self.DPP.boardConfig.DPPParams.b[ self.DPP.CH]        = int(1e+3*self.gui.TriggerRiseTime.value()) # ns
+      self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH]    = int(1e+3*self.gui.TriggerHoldoff.value())  # ns
 
-    mode = self.gui.TriggerMode.currentIndex()
-    if   mode in (2,3,4,5): self.DPP.trigger = 1 # auto trigger (now external = auto)
-    elif mode in (0,1):     self.DPP.trigger = 0 # normal trigger
-    if   mode in (1,3,5):   self.__single = True # single shot
-    elif mode in (0,2,4):   self.__single = False
+      mode = self.gui.TriggerMode.currentIndex()
+      if   mode in (2,3,4,5): self.DPP.trigger = 1 # auto trigger (now external = auto)
+      elif mode in (0,1):     self.DPP.trigger = 0 # normal trigger
+      if   mode in (1,3,5):   self.__single = True # single shot
+      elif mode in (0,2,4):   self.__single = False
 
-    self.DPP.Board_Reconfigure(self.DPP.CH)
-    self.draw()
-#    if self._nsample is None: self.draw()
-#    else:               self.Visualize()
+      self.DPP.Board_Reconfigure(self.DPP.CH)
+      self.draw()
     
     
 
