@@ -57,8 +57,10 @@ DPP_Probes = {"SupportedVirtualProbes1" : ["Input", "RC-CR", "RC-CR²", "Trapezo
                                            "Trigger Value", "Acquisition Veto", "BFMVeto", "External Trigger", "Trigger", 
                                            "None", "Energy Accepted", "Saturation", "Reset", "Baseline Freeze", "Busy", "PrgVeto", "Inhibit"],
               "SupportedDigitalProbes2" : ["Trigger", "None", "Peaking", "Baseline Holdoff", "PURFlag", "EnergyAccepted","Saturation", "Reset"],
-              "InputRanges"             : ["9.50", "3.70", "1.40", "0.60", "3.00", "1.00", "0.30", "10.0", "5.00", "2.00", "0.50", "2.50",
-                                           "1.25", "0.10", "0.21", "0.45", "0.83", "1.60", "3.30", "6.60", "13.3"]}
+              "InputRanges"             : ["9,50", "3,70", "1,40", "0,60", "3,00", "1,00", "0,30", "10,0", "5,00", "2,00", "0,50", 
+                                           "2,50", "1,25", "0,10", "0,21", "0,45", "0,83", "1,60", "3,30", "6,60", "13,3"]}
+#              "InputRanges"             : ["9.50", "3.70", "1.40", "0.60", "3.00", "1.00", "0.30", "10.0", "5.00", "2.00", "0.50", "2.50",
+#                                           "1.25", "0.10", "0.21", "0.45", "0.83", "1.60", "3.30", "6.60", "13.3"]}
 
 
 class DPP_Traces(Structure):

@@ -14,7 +14,7 @@ class OscCanvas(FigureCanvas):
   __B       = ArrayType() # Scope B
   __C       = ArrayType() # Scope C
   __T       = ArrayType() # Scope T
-  __colors  = ['#FF1493', '#7FFF00', '#00FFFF', '#FFFF00', '#F4A460']
+  __colors  = ['#FF2090', '#7FFF00', '#00FFFF', '#FFFF00', '#F4A460']
   __labels  = ['']*5
   __vscale  = [1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.00, 2.00, 5.00]; __vscale.reverse()
   __hscale  = [1e+2, 2e+2, 5e+2, 1e+3, 2e+3, 5e+3, 1e+4, 2e+4, 5e+4]; __hscale.reverse()
@@ -23,6 +23,8 @@ class OscCanvas(FigureCanvas):
   __single  = True
   __ticks   = [-3, -2, -1, 0, 1, 2, 3]
   __zeros   = [ 0,  0,  0, 0, 0, 0, 0]
+  __L       = 3.95
+  __frame   = [-5, 5, 5, -5]
   
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
@@ -31,14 +33,8 @@ class OscCanvas(FigureCanvas):
     self.figure.subplotpars.top, self.figure.subplotpars.bottom = 0.995, 0.120
     self._plot_ref, self._nsample, self._tsamp = None, None, None
     for ch in range(5):
-      self.__labels[ch] = self.figure.text(0.025 + 0.19*ch, 0.025, "***", 
-                                         color    = self.__colors[ch], 
-                                         family   = 'monospace', 
-                                         fontsize = 14)
+      self.__labels[ch] = self.figure.text(0.025 + 0.19*ch, 0.025, "***", color    = self.__colors[ch], family   = 'monospace', fontsize = 14)
     self.osc = self.figure.add_subplot(111)
-#    for el in dir(self.osc.Axes):
-#      if 'axis' in el:
-#        print(el)
 
   def Prepare(self, DPP, gui):  
     self.DPP = DPP
@@ -84,34 +80,32 @@ class OscCanvas(FigureCanvas):
     Ag,  Ao  = self.__gain/self.__AScale, self.__AShift/self.__AScale
     Bg,  Bo  = self.__gain/self.__BScale, self.__BShift/self.__BScale
     Tg,  To  = self._tsamp/self.__TScale, self.__TShift/self.__TScale
-    if self.DPP.boardConfig.WFParams.vp1 is 0: As = self.__zero * Ag
-    else:                                      As = 0.0
-    if self.DPP.boardConfig.WFParams.vp2 is 0: Bs = self.__zero * Bg
-    else:                                      Bs = 0.0
+    As       = self.__zero * Ag if self.DPP.boardConfig.WFParams.vp1 is 0 else 0.0
+    Bs       = self.__zero * Bg if self.DPP.boardConfig.WFParams.vp2 is 0 else 0.0
+
     for t in range(self._nsample): 
       self.__A[t] = Ag * self.DPP.Traces.AT1[t] + Ao - As
       self.__B[t] = Bg * self.DPP.Traces.AT2[t] + Bo - Bs
       self.__C[t] = 6. * self.DPP.Traces.DT1[t] - 3.
       self.__T[t] = Tg *                     t  + To - to*Tg
-    lim = 3.95
-    if -lim <= To <= lim: self.__Tz = [To]
-    elif       To < -lim: self.__Tz = [-lim]
-    elif       To >  lim: self.__Tz = [ lim]
-    if -lim <= Ao <= lim: self.__Az = [Ao]
-    elif       Ao < -lim: self.__Az = [-lim]
-    elif       Ao >  lim: self.__Az = [ lim]
-    if -lim <= Bo <= lim: self.__Bz = [Bo]
-    elif       Bo < -lim: self.__Bz = [-lim]
-    elif       Bo >  lim: self.__Bz = [ lim]
+    self.__Tz = [To] if abs(To)<=self.__L else [self.__L] if To > 0.0 else [-self.__L]
+    self.__Az = [Ao] if abs(Ao)<=self.__L else [self.__L] if Ao > 0.0 else [-self.__L]
+    self.__Bz = [Bo] if abs(Bo)<=self.__L else [self.__L] if Bo > 0.0 else [-self.__L]
+
+    Amin = Ao - As; Amax = Amin + Ag*(1<<self.DPP.boardInfo.ADC_NBits)
+    Bmin = Bo - Bs; Bmax = Bmin + Bg*(1<<self.DPP.boardInfo.ADC_NBits)
+
 
     if self._plot_ref is None:
-      A = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color = self.__colors[0])[0]
-      B = self.osc.plot(self.__T[:self._nsample], self.__B[:self._nsample], '-', color = self.__colors[1])[0]
-      C = self.osc.plot(self.__T[:self._nsample], self.__C[:self._nsample], '-', color = self.__colors[2])[0]
-      D = self.osc.plot([-lim], self.__Az, '>', color = self.__colors[0])[0]
-      E = self.osc.plot([-lim], self.__Bz, '>', color = self.__colors[1])[0]
-      F = self.osc.plot(self.__Tz, [-lim], '^', color = self.__colors[3])[0]
-      self._plot_ref = [A, B, C, D, E, F]
+      A  = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color = self.__colors[0])[0]
+      B  = self.osc.plot(self.__T[:self._nsample], self.__B[:self._nsample], '-', color = self.__colors[1])[0]
+      C  = self.osc.plot(self.__T[:self._nsample], self.__C[:self._nsample], '-', color = self.__colors[2])[0]
+      D  = self.osc.plot([-self.__L], self.__Az, '>', color = self.__colors[0])[0]
+      E  = self.osc.plot([-self.__L], self.__Bz, '>', color = self.__colors[1])[0]
+      F  = self.osc.plot(self.__Tz, [-self.__L], '^', color = self.__colors[3])[0]
+      fA = self.osc.plot(self.__frame, [Amax, Amax, Amin, Amin], ':', color = self.__colors[0])[0]
+      fB = self.osc.plot(self.__frame, [Bmax, Bmax, Bmin, Bmin], ':', color = self.__colors[1])[0]
+      self._plot_ref = [A, B, C, D, E, F, fA, fB]
     else:
       self._plot_ref[0].set_xdata(self.__T[:self._nsample])
       self._plot_ref[0].set_ydata(self.__A[:self._nsample])
@@ -122,6 +116,8 @@ class OscCanvas(FigureCanvas):
       self._plot_ref[3].set_ydata(self.__Az)
       self._plot_ref[4].set_ydata(self.__Bz)
       self._plot_ref[5].set_xdata(self.__Tz)
+      self._plot_ref[6].set_ydata([Amax, Amax, Amin, Amin])
+      self._plot_ref[7].set_ydata([Bmax, Bmax, Bmin, Bmin])
     self.draw()
 
   def Legend(self):

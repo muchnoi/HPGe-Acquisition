@@ -67,7 +67,7 @@ QDoubleSpinBox {background-color: #FFFFFF;}
 </string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_CF">
        <property name="font">
@@ -771,7 +771,7 @@ margin-top: 1 1ex;}
                   </widget>
                  </item>
                  <item>
-                  <widget class="QDoubleSpinBox" name="DCoffsetSpinBox">
+                  <widget class="QSpinBox" name="DCoffsetSpinBox">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -784,23 +784,14 @@ margin-top: 1 1ex;}
                      <pointsize>9</pointsize>
                     </font>
                    </property>
-                   <property name="prefix">
-                    <string>DC Offset:  </string>
-                   </property>
                    <property name="suffix">
                     <string> %</string>
                    </property>
-                   <property name="decimals">
-                    <number>1</number>
-                   </property>
-                   <property name="minimum">
-                    <double>-50.000000000000000</double>
+                   <property name="prefix">
+                    <string>DC Offset: </string>
                    </property>
                    <property name="maximum">
-                    <double>50.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.100000000000000</double>
+                    <number>100</number>
                    </property>
                   </widget>
                  </item>
@@ -977,6 +968,18 @@ margin-top: 1 1ex;}
                    <property name="suffix">
                     <string> μs</string>
                    </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="minimum">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -998,6 +1001,15 @@ margin-top: 1 1ex;}
                    </property>
                    <property name="suffix">
                     <string> μs</string>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="minimum">
+                    <double>1.000000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>50.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -1021,6 +1033,15 @@ margin-top: 1 1ex;}
                    <property name="suffix">
                     <string> μs</string>
                    </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1042,6 +1063,15 @@ margin-top: 1 1ex;}
                    </property>
                    <property name="suffix">
                     <string> μs</string>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -1087,6 +1117,15 @@ margin-top: 1 1ex;}
                    <property name="suffix">
                     <string> μs</string>
                    </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1130,6 +1169,15 @@ margin-top: 1 1ex;}
                    </property>
                    <property name="suffix">
                     <string> μs</string>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -1556,8 +1604,14 @@ margin-top: 1 1ex;}
                    <property name="suffix">
                     <string> μs</string>
                    </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
                    <property name="singleStep">
                     <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -1582,13 +1636,16 @@ margin-top: 1 1ex;}
                     <string> μs</string>
                    </property>
                    <property name="decimals">
-                    <number>2</number>
+                    <number>1</number>
                    </property>
                    <property name="maximum">
                     <double>10.000000000000000</double>
                    </property>
                    <property name="singleStep">
                     <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -1613,7 +1670,7 @@ margin-top: 1 1ex;}
                     <string> μs</string>
                    </property>
                    <property name="decimals">
-                    <number>2</number>
+                    <number>1</number>
                    </property>
                    <property name="maximum">
                     <double>20.000000000000000</double>

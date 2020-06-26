@@ -75,29 +75,28 @@ class TAB_OS:
     self.__SetInitialField(self.gui.Digital_1,      self.DPP.boardConfig.WFParams.dp1)
     self.__SetInitialField(self.gui.InputPolarity,  self.DPP.boardConfig.PulsePolarity[self.DPP.CH])
 
-    self.gui.FineGainSpinBox.setValue(        self.DPP.boardConfig.DPPParams.enf[ self.DPP.CH])
-    self.gui.DCoffsetSpinBox.setValue(        self.DPP.boardConfig.DCoffset[self.DPP.CH]/655.35 - 50.0)
-    self.gui.RiseTimeSpinBox.setValue(   1e-3*self.DPP.boardConfig.DPPParams.k[   self.DPP.CH])
-    self.gui.DecayTimeSpinBox.setValue(  1e-3*self.DPP.boardConfig.DPPParams.M[   self.DPP.CH])
-    self.gui.FlatTopSpinBox.setValue(    1e-3*self.DPP.boardConfig.DPPParams.m[   self.DPP.CH])
-    self.gui.PeakDelaySpinBox.setValue(  1e-3*self.DPP.boardConfig.DPPParams.ftd[ self.DPP.CH])
-    self.gui.PeakMeanSpinBox.setValue(        self.DPP.boardConfig.DPPParams.nspk[self.DPP.CH])
-    self.gui.PeakHoldoffSpinBox.setValue(1e-3*self.DPP.boardConfig.DPPParams.pkho[self.DPP.CH])
-    self.gui.BaseMeanSpinBox.setValue(        self.DPP.boardConfig.DPPParams.nsbl[self.DPP.CH])
-    self.gui.BaseHoldoffSpinBox.setValue(1e-3*self.DPP.boardConfig.DPPParams.blho[self.DPP.CH])
-    self.gui.TriggerSmoothing.setValue  (     self.DPP.boardConfig.DPPParams.a[ self.DPP.CH])
-    self.gui.TriggerRiseTime.setValue(   1e-3*self.DPP.boardConfig.DPPParams.b[ self.DPP.CH])
-    self.gui.TriggerHoldoff.setValue(    1e-3*self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH])
-    self.gui.TriggerLevel.setValue(           self.DPP.boardConfig.DPPParams.thr[ self.DPP.CH])
-    self.gui.TriggerIntro.setValue(   .5*1e-3*self.DPP.boardConfig.WFParams.preTrigger)
+    self.gui.FineGainSpinBox.setValue(          self.DPP.boardConfig.DPPParams.enf[ self.DPP.CH])
+    self.gui.DCoffsetSpinBox.setValue(int(100 - self.DPP.boardConfig.DCoffset[self.DPP.CH]/327.67))
+    self.gui.RiseTimeSpinBox.setValue(   1e-3 * self.DPP.boardConfig.DPPParams.k[   self.DPP.CH])
+    self.gui.DecayTimeSpinBox.setValue(  1e-3 * self.DPP.boardConfig.DPPParams.M[   self.DPP.CH])
+    self.gui.FlatTopSpinBox.setValue(    1e-3 * self.DPP.boardConfig.DPPParams.m[   self.DPP.CH])
+    self.gui.PeakDelaySpinBox.setValue(  1e-3 * self.DPP.boardConfig.DPPParams.ftd[ self.DPP.CH])
+    self.gui.PeakMeanSpinBox.setValue(          self.DPP.boardConfig.DPPParams.nspk[self.DPP.CH])
+    self.gui.PeakHoldoffSpinBox.setValue(1e-3 * self.DPP.boardConfig.DPPParams.pkho[self.DPP.CH])
+    self.gui.BaseMeanSpinBox.setValue(          self.DPP.boardConfig.DPPParams.nsbl[self.DPP.CH])
+    self.gui.BaseHoldoffSpinBox.setValue(1e-3 * self.DPP.boardConfig.DPPParams.blho[self.DPP.CH])
+    self.gui.TriggerSmoothing.setValue  (       self.DPP.boardConfig.DPPParams.a[ self.DPP.CH])
+    self.gui.TriggerRiseTime.setValue(   1e-3 * self.DPP.boardConfig.DPPParams.b[ self.DPP.CH])
+    self.gui.TriggerHoldoff.setValue(    1e-3 * self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH])
+    self.gui.TriggerLevel.setValue(             self.DPP.boardConfig.DPPParams.thr[ self.DPP.CH])
+    self.gui.TriggerIntro.setValue(   .5*1e-3 * self.DPP.boardConfig.WFParams.preTrigger)
     self.gui.fill_initials = False
     self.__ADC()
-
     
   def __SpinBox_Value_Changed(self):
     if not self.gui.fill_initials:
+      self.DPP.boardConfig.DCoffset[self.DPP.CH]       = int((100 - self.gui.DCoffsetSpinBox.value()) * 327.67)
       self.DPP.boardConfig.DPPParams.enf[ self.DPP.CH] =            self.gui.FineGainSpinBox.value()
-      self.DPP.boardConfig.DCoffset[self.DPP.CH] = int((self.gui.DCoffsetSpinBox.value() + 50.0) * 655.35)
       self.DPP.boardConfig.DPPParams.k[   self.DPP.CH] = int(1000 * self.gui.RiseTimeSpinBox.value())
       self.DPP.boardConfig.DPPParams.M[   self.DPP.CH] = int(1000 * self.gui.DecayTimeSpinBox.value())
       self.DPP.boardConfig.DPPParams.m[   self.DPP.CH] = int(1000 * self.gui.FlatTopSpinBox.value())
@@ -123,7 +122,7 @@ class TAB_OS:
     elif POL is 1: 
       if DCO < 25000: zero = -606.92 + 0.272018 * DCO  # negative polarity
       else:           zero = -653.33 + 0.274035 * DCO  # negative polarity
-    gain = self.DPP.inputRanges[INR]/2**self.DPP.boardInfo.ADC_NBits
+    gain = self.DPP.inputRanges[INR]/(1<<self.DPP.boardInfo.ADC_NBits)
     self.gui.QScope.Scale(zero, gain)
     self.gui.QScope.Legend()
     self.gui.QScope.Trigger()

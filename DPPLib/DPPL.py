@@ -16,7 +16,7 @@ class CAEN_DPP(HVPS, DGTZ):
   link.LinkType  = link.LinkTypes['USB']
   boardConfig    = DPP_DgtzParams()
   inputRange     = [0]*MAX_NUMCHB
-  inputRanges    = [float(e) for e in DPP_Probes["InputRanges"]]
+  inputRanges    = [float(e.replace(",",".")) for e in DPP_Probes["InputRanges"]]
   boardInfo      = DPP_Info()
   Traces         = DPP_Traces()
   is_board_acq   = c_int32()

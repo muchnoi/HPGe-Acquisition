@@ -12,9 +12,11 @@ class DGTZ:
         self.inputRange, self.boardConfig = pickle.load(fp)
     except FileNotFoundError:        
       self.Init_DGTZ_Parameters()
+#    print('READ: ', self.boardConfig.DCoffset[self.CH])
 
   def Save_DGTZ_Parameters(self):
-#    self.GetBoardConfiguration()
+    self.GetBoardConfiguration()
+#    print('SAVE: ', self.boardConfig.DCoffset[self.CH])
     with open('dgtz.pickle', 'wb') as fp: 
       pickle.dump([self.inputRange, self.boardConfig], fp)
 
