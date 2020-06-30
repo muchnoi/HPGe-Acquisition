@@ -64,7 +64,7 @@ DPP_Probes = {"SupportedVirtualProbes1" : ["Input", "RC-CR", "RC-CR²", "Trapezo
 
 
 class DPP_Traces(Structure):
-  RecordLength = 8192
+  RecordLength = 1<<16 # max length of waveform record is 65536 samples
   _fields_ = (("AT1",  c_int16  * RecordLength), 
               ("AT2",  c_int16  * RecordLength),  
               ("DT1",  c_uint8  * RecordLength), 

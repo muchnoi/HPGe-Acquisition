@@ -9,7 +9,7 @@ from matplotlib import style
 style.use('dark_background')
 
 class OscCanvas(FigureCanvas):
-  ArrayType = c_double*8192
+  ArrayType = c_double*65536
   __A       = ArrayType() # Scope A
   __B       = ArrayType() # Scope B
   __C       = ArrayType() # Scope C
@@ -25,6 +25,7 @@ class OscCanvas(FigureCanvas):
   __zeros   = [ 0,  0,  0, 0, 0, 0, 0]
   __L       = 3.95
   __frame   = [-5, 5, 5, -5]
+  __LREC    = 1000
   
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
@@ -39,13 +40,14 @@ class OscCanvas(FigureCanvas):
   def Prepare(self, DPP, gui):  
     self.DPP = DPP
     self.gui = gui
+    self.maxch = 1<<self.DPP.boardInfo.ADC_NBits
     self.osc.set_xlim(-4,  4); self.osc.xaxis.set_ticklabels(''); self.osc.set_xticks(self.__ticks)
     self.osc.set_ylim(-4 , 4); self.osc.yaxis.set_ticklabels(''); self.osc.set_yticks(self.__ticks)
     self.osc.set_autoscale_on(False); self.osc.set_axisbelow(False)
     self.osc.grid(ls = ':', c = 'w')
     self.osc.tick_params(direction='in', length=4, width=1, bottom=1, top=1, left=1, right=1)
-    self.osc.plot(self.__ticks, self.__zeros, 'y.', markersize=7)
-    self.osc.plot(self.__zeros, self.__ticks, 'y.', markersize=7)
+    self.osc.plot(self.__ticks, self.__zeros, 'y.', markersize=5)
+    self.osc.plot(self.__zeros, self.__ticks, 'y.', markersize=5)
     
   def Scale(self, zero, gain):
     self.__zero, self.__gain = zero, gain
@@ -80,8 +82,13 @@ class OscCanvas(FigureCanvas):
     Ag,  Ao  = self.__gain/self.__AScale, self.__AShift/self.__AScale
     Bg,  Bo  = self.__gain/self.__BScale, self.__BShift/self.__BScale
     Tg,  To  = self._tsamp/self.__TScale, self.__TShift/self.__TScale
-    As       = self.__zero * Ag if self.DPP.boardConfig.WFParams.vp1 is 0 else 0.0
-    Bs       = self.__zero * Bg if self.DPP.boardConfig.WFParams.vp2 is 0 else 0.0
+        
+    if self.DPP.boardConfig.WFParams.vp1 is 0:
+      As = self.__zero * Ag;  Amin = Ao - As;  Amax = Amin + Ag*self.maxch
+    else: As, Amin, Amax = 0, -5,  5
+    if self.DPP.boardConfig.WFParams.vp2 is 0:
+      Bs = self.__zero * Bg;  Bmin = Bo - Bs;  Bmax = Bmin + Bg*self.maxch
+    else: Bs, Bmin, Bmax = 0, -5,  5
 
     for t in range(self._nsample): 
       self.__A[t] = Ag * self.DPP.Traces.AT1[t] + Ao - As
@@ -91,10 +98,6 @@ class OscCanvas(FigureCanvas):
     self.__Tz = [To] if abs(To)<=self.__L else [self.__L] if To > 0.0 else [-self.__L]
     self.__Az = [Ao] if abs(Ao)<=self.__L else [self.__L] if Ao > 0.0 else [-self.__L]
     self.__Bz = [Bo] if abs(Bo)<=self.__L else [self.__L] if Bo > 0.0 else [-self.__L]
-
-    Amin = Ao - As; Amax = Amin + Ag*(1<<self.DPP.boardInfo.ADC_NBits)
-    Bmin = Bo - Bs; Bmax = Bmin + Bg*(1<<self.DPP.boardInfo.ADC_NBits)
-
 
     if self._plot_ref is None:
       A  = self.osc.plot(self.__T[:self._nsample], self.__A[:self._nsample], '-', color = self.__colors[0])[0]
@@ -107,12 +110,9 @@ class OscCanvas(FigureCanvas):
       fB = self.osc.plot(self.__frame, [Bmax, Bmax, Bmin, Bmin], ':', color = self.__colors[1])[0]
       self._plot_ref = [A, B, C, D, E, F, fA, fB]
     else:
-      self._plot_ref[0].set_xdata(self.__T[:self._nsample])
-      self._plot_ref[0].set_ydata(self.__A[:self._nsample])
-      self._plot_ref[1].set_xdata(self.__T[:self._nsample])
-      self._plot_ref[1].set_ydata(self.__B[:self._nsample])
-      self._plot_ref[2].set_xdata(self.__T[:self._nsample])
-      self._plot_ref[2].set_ydata(self.__C[:self._nsample])
+      self._plot_ref[0].set_xdata(self.__T[:self._nsample]); self._plot_ref[0].set_ydata(self.__A[:self._nsample])
+      self._plot_ref[1].set_xdata(self.__T[:self._nsample]); self._plot_ref[1].set_ydata(self.__B[:self._nsample])
+      self._plot_ref[2].set_xdata(self.__T[:self._nsample]); self._plot_ref[2].set_ydata(self.__C[:self._nsample])
       self._plot_ref[3].set_ydata(self.__Az)
       self._plot_ref[4].set_ydata(self.__Bz)
       self._plot_ref[5].set_xdata(self.__Tz)
@@ -144,7 +144,13 @@ class OscCanvas(FigureCanvas):
     if -1e+3 < self.__TShift < 1e+3: text += 'Δ:{:+4.0f}ns'.format(     self.__TShift)
     else:                            text += 'Δ:{:+4.1f}μs'.format(1e-3*self.__TShift)
     self.__labels[3].set_text(text)    
-
+    recordlength = min(1<<16, int(0.4*self.__TScale - 0.1*self.__TShift + 100*self.gui.TriggerIntro.value()))
+    if self.__LREC != recordlength:
+       self.__LREC  = recordlength
+       print('LREC = %d samples' % recordlength)
+       self.DPP.boardConfig.WFParams.recordLength = 10*self.__LREC # samples -> ns
+       self.DPP.Board_Reconfigure(self.DPP.CH)
+    
     onehalf = 3*self.__AScale
     if     onehalf < 1.00: text  = 'C₁={:+4.0f}mV\nC₀={:+4.0f}mV'.format(1000*onehalf,-1000*onehalf)
     else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,     -onehalf)
