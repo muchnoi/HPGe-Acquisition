@@ -1033,7 +1033,7 @@ class Ui_MainWindow(object):
         self.TriggerHoldoff.setSuffix(_translate("MainWindow", " μs"))
         self.TriggerIntro.setPrefix(_translate("MainWindow", "Intro:     "))
         self.TriggerIntro.setSuffix(_translate("MainWindow", " μs"))
-        self.TriggerSmoothing.setPrefix(_translate("MainWindow", "Smoothing: "))
+        self.TriggerSmoothing.setPrefix(_translate("MainWindow", "Smoothing RC-CR²: "))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tab_OS), _translate("MainWindow", "Oscilloscope"))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tab_SP), _translate("MainWindow", "Spectrum"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))

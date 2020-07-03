@@ -9,12 +9,12 @@ from matplotlib import style
 style.use('dark_background')
 
 class OscCanvas(FigureCanvas):
-  ArrayType = c_double*65536
-  __A       = ArrayType() # Scope A
-  __B       = ArrayType() # Scope B
-  __C       = ArrayType() # Scope C
-  __T       = ArrayType() # Scope T
-  __colors  = ['#FF2090', '#7FFF00', '#00FFFF', '#FFFF00', '#F4A460']
+  ArrayType = c_double*65536 # Maximum length of a waveform
+  __A       = ArrayType()    # Scope A
+  __B       = ArrayType()    # Scope B
+  __C       = ArrayType()    # Scope C
+  __T       = ArrayType()    # Scope T
+  __colors  = ['#FFFF00', '#7FFF00', '#00FFFF', '#F0F0F0', '#F4A460']
   __labels  = ['']*5
   __vscale  = [1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.00, 2.00, 5.00]; __vscale.reverse()
   __hscale  = [1e+2, 2e+2, 5e+2, 1e+3, 2e+3, 5e+3, 1e+4, 2e+4, 5e+4]; __hscale.reverse()
@@ -144,16 +144,16 @@ class OscCanvas(FigureCanvas):
     if -1e+3 < self.__TShift < 1e+3: text += 'Δ:{:+4.0f}ns'.format(     self.__TShift)
     else:                            text += 'Δ:{:+4.1f}μs'.format(1e-3*self.__TShift)
     self.__labels[3].set_text(text)    
-    recordlength = min(1<<16, int(0.4*self.__TScale - 0.1*self.__TShift + 100*self.gui.TriggerIntro.value()))
+    recordlength = min(65536, int(0.4*self.__TScale - 0.1*self.__TShift + 100*self.gui.TriggerIntro.value()))
     if self.__LREC != recordlength:
        self.__LREC  = recordlength
-       print('LREC = %d samples' % recordlength)
+#       print('LREC = %d samples' % recordlength)
        self.DPP.boardConfig.WFParams.recordLength = 10*self.__LREC # samples -> ns
        self.DPP.Board_Reconfigure(self.DPP.CH)
     
     onehalf = 3*self.__AScale
-    if     onehalf < 1.00: text  = 'C₁={:+4.0f}mV\nC₀={:+4.0f}mV'.format(1000*onehalf,-1000*onehalf)
-    else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,     -onehalf)
+    if     onehalf < 1.00: text  = 'C₁={:+4.0f}mV\nC₀={:+4.0f}mV'.format(1000*onehalf, -1000*onehalf)
+    else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,      -onehalf)
     self.__labels[2].set_text(text)    
     
     if not self._nsample: self.draw()

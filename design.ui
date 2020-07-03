@@ -1698,7 +1698,7 @@ margin-top: 1 1ex;}
                     <string/>
                    </property>
                    <property name="prefix">
-                    <string>Smoothing: </string>
+                    <string>Smoothing RC-CR²: </string>
                    </property>
                    <property name="minimum">
                     <number>4</number>
