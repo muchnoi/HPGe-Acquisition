@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1085</width>
-    <height>902</height>
+    <height>937</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1006,7 +1006,7 @@ margin-top: 1 1ex;}
                     <number>1</number>
                    </property>
                    <property name="minimum">
-                    <double>1.000000000000000</double>
+                    <double>0.100000000000000</double>
                    </property>
                    <property name="value">
                     <double>50.000000000000000</double>
@@ -1076,24 +1076,12 @@ margin-top: 1 1ex;}
                   </widget>
                  </item>
                  <item>
-                  <widget class="QSpinBox" name="PeakMeanSpinBox">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
+                  <widget class="QComboBox" name="PeakMean">
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
                      <pointsize>9</pointsize>
                     </font>
-                   </property>
-                   <property name="suffix">
-                    <string> samples</string>
-                   </property>
-                   <property name="prefix">
-                    <string>Peak Mean:    </string>
                    </property>
                   </widget>
                  </item>
@@ -1129,24 +1117,12 @@ margin-top: 1 1ex;}
                   </widget>
                  </item>
                  <item>
-                  <widget class="QSpinBox" name="BaseMeanSpinBox">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
+                  <widget class="QComboBox" name="BaseMean">
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
                      <pointsize>9</pointsize>
                     </font>
-                   </property>
-                   <property name="suffix">
-                    <string> samples</string>
-                   </property>
-                   <property name="prefix">
-                    <string>Base Mean:    </string>
                    </property>
                   </widget>
                  </item>
@@ -1681,30 +1657,12 @@ margin-top: 1 1ex;}
                   </widget>
                  </item>
                  <item>
-                  <widget class="QSpinBox" name="TriggerSmoothing">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
+                  <widget class="QComboBox" name="Smoothin">
                    <property name="font">
                     <font>
                      <family>Noto Mono</family>
                      <pointsize>9</pointsize>
                     </font>
-                   </property>
-                   <property name="suffix">
-                    <string/>
-                   </property>
-                   <property name="prefix">
-                    <string>Smoothing RC-CR²: </string>
-                   </property>
-                   <property name="minimum">
-                    <number>4</number>
-                   </property>
-                   <property name="maximum">
-                    <number>16</number>
                    </property>
                   </widget>
                  </item>

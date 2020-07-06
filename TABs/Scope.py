@@ -171,7 +171,6 @@ class OscCanvas(FigureCanvas):
       if PT < 0.999: text += 'intro: {:3.0f} ns'.format(  1e+3*PT)
       else:          text += 'intro: {:3.1f} μs'.format(       PT)
       self.__labels[4].set_text(text)
-      self.DPP.boardConfig.DPPParams.a[ self.DPP.CH]        =          self.gui.TriggerSmoothing.value() # samples
       self.DPP.boardConfig.DPPParams.b[ self.DPP.CH]        = int(1e+3*self.gui.TriggerRiseTime.value()) # ns
       self.DPP.boardConfig.DPPParams.trgho[ self.DPP.CH]    = int(1e+3*self.gui.TriggerHoldoff.value())  # ns
 

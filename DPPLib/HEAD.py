@@ -50,7 +50,7 @@ DPP_ErrorCode = {  0 : "Operation completed successfully",
 
 DPP_Probes = {"SupportedVirtualProbes1" : ["Input", "RC-CR", "RC-CR²", "Trapezoid", "FastTrap", 
                                            "Trap Baseline", "Energy Out", "Baseline Correction", "None"],
-              "SupportedVirtualProbes2" : ["Input", "Threshold", "Trapezoid", "Trapezoid BaseLine", "None", 
+              "SupportedVirtualProbes2" : ["Input", "Threshold", "Trapezoid - Baseline", "Trapezoid BaseLine", "None", 
                                            "RC_CR", "FastTrap", "RC-CR²", "Trapezoid", "Energy Out"],
               "SupportedDigitalProbes1" : ["Trigger Window", "Armed", "Peak Run", "Pileup Flag", "Peaking", 
                                            "Trigger Validation Acceptance Window", "Baseline Holdoff", "Trigger Holdoff", 
