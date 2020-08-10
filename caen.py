@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-import os, sys 
 from PyQt5  import QtWidgets
 from PyQt5.QtCore import QTimer
 from TABs import TABs
-import design  
+import sys, design  
 
 class Application(QtWidgets.QMainWindow, design.Ui_MainWindow):
   def __init__(self): 

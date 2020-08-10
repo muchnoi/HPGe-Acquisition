@@ -36,6 +36,7 @@ class OscCanvas(FigureCanvas):
     for ch in range(5):
       self.__labels[ch] = self.figure.text(0.025 + 0.19*ch, 0.025, "***", color    = self.__colors[ch], family   = 'monospace', fontsize = 14)
     self.osc = self.figure.add_subplot(111)
+    self.__labels[2].set_text('C: ↑ true\nC: ↓false')    
 
   def Prepare(self, DPP, gui):  
     self.DPP = DPP
@@ -151,10 +152,10 @@ class OscCanvas(FigureCanvas):
        self.DPP.boardConfig.WFParams.recordLength = 10*self.__LREC # samples -> ns
        self.DPP.Board_Reconfigure(self.DPP.CH)
     
-    onehalf = 3*self.__AScale
-    if     onehalf < 1.00: text  = 'C₁={:+4.0f}mV\nC₀={:+4.0f}mV'.format(1000*onehalf, -1000*onehalf)
-    else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,      -onehalf)
-    self.__labels[2].set_text(text)    
+#    onehalf = 3*self.__AScale
+#    if     onehalf < 1.00: text  = 'C₁={:+4.0f}mV\nC₀={:+4.0f}mV'.format(1000*onehalf, -1000*onehalf)
+#    else:                  text  = 'C₁={:+4.0f} V\nC₀={:+4.0f} V'.format(     onehalf,      -onehalf)
+#    self.__labels[2].set_text(text)    
     
     if not self._nsample: self.draw()
     else:                 self.Visualize()

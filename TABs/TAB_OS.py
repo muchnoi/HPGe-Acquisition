@@ -157,7 +157,7 @@ class TAB_OS:
     self.DPP.Board_Reconfigure(self.DPP.CH)
 
   def __BaseMean(self, index):
-    self.DPP.boardConfig.DPPParams.nspl[self.DPP.CH] = self.gui.BaseMean.itemData(index)
+    self.DPP.boardConfig.DPPParams.nsbl[self.DPP.CH] = self.gui.BaseMean.itemData(index)
     self.DPP.Board_Reconfigure(self.DPP.CH)
 
   def __Smoothin(self, index):

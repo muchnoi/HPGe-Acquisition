@@ -13,9 +13,14 @@ class TABs(CF, HV, OS, SP):
     self.gui.Tabs.setCurrentWidget(self.gui.tab_CF)
 
     self.gui.menuWaveform_Settings.setDisabled(True)
-    self.gui.actionSave_WF.triggered.connect(self.DPP.Save_DGTZ_Parameters)
-    self.gui.actionBack_to_Saved.triggered.connect(self.Read_Scope_Parameters)
-    self.gui.actionBack_to_Default.triggered.connect(self.Init_Scope_Parameters)
+    self.gui.Save_WF_Settings.triggered.connect(self.DPP.Save_DGTZ_Parameters)
+    self.gui.Back_to_Saved_WF_Settings.triggered.connect(self.Read_Scope_Parameters)
+    self.gui.Back_to_Default_WF_Settings.triggered.connect(self.Init_Scope_Parameters)
+
+    self.gui.menuAcquisition_Settings.setDisabled(True)
+    self.gui.Save_ACQ_Settings.triggered.connect(self.Save_Acquisition_Parameters)
+    self.gui.Back_to_Saved_ACQ_Settings.triggered.connect(self.Read_Acquisition_Parameters)
+    self.gui.Back_to_Default_ACQ_Settings.triggered.connect(self.Init_Acquisition_Parameters)
 
     self.gui.Tabs.currentChanged.connect(self.Select_Tab)
     self.gui.timerA.start(1000)
@@ -23,13 +28,13 @@ class TABs(CF, HV, OS, SP):
     self.already_connected = False   
 
   def Select_Tab(self):
-    if     self.gui.tab_OS.isVisible(): 
-      OS.__init__(self)
-      self.gui.menuWaveform_Settings.setDisabled(False)
-    else:
-      self.gui.menuWaveform_Settings.setDisabled(True)
-      if   self.gui.tab_HV.isVisible(): HV.__init__(self)
-      elif self.gui.tab_SP.isVisible(): SP.__init__(self)
+    if not self.gui.tab_OS.isVisible(): self.gui.menuWaveform_Settings.setDisabled(True)
+    else:            OS.__init__(self); self.gui.menuWaveform_Settings.setDisabled(False)
+      
+    if self.gui.tab_HV.isVisible(): HV.__init__(self)
+    
+    if not self.gui.tab_SP.isVisible(): self.gui.menuAcquisition_Settings.setDisabled(True)
+    else:            SP.__init__(self); self.gui.menuAcquisition_Settings.setDisabled(False)
     
   def Update_Tabs(self):
     if self.gui.Connect.isChecked(): #self.DPP.Connection:

@@ -1,6 +1,4 @@
-from ctypes import byref, c_uint8, c_int16, c_int32, c_uint32, c_double
-from ctypes import c_int32 as c_enum
-from ctypes import memset, sizeof
+from ctypes import memset, sizeof, byref, c_int16, c_int32, c_uint32, c_uint64, c_double, c_int32 as c_enum
 from DPPLib.HEAD import MAX_GW, DPP_DgtzParams
 import pickle
 
@@ -12,11 +10,9 @@ class DGTZ:
         self.inputRange, self.boardConfig = pickle.load(fp)
     except FileNotFoundError:        
       self.Init_DGTZ_Parameters()
-#    print('READ: ', self.boardConfig.DCoffset[self.CH])
 
   def Save_DGTZ_Parameters(self):
     self.GetBoardConfiguration()
-#    print('SAVE: ', self.boardConfig.DCoffset[self.CH])
     with open('dgtz.pickle', 'wb') as fp: 
       pickle.dump([self.inputRange, self.boardConfig], fp)
 
@@ -90,11 +86,6 @@ class DGTZ:
       DP.DPPParams.X770_extra[ch].trigMODE          = 0
       DP.SpectrumControl[ch].SpectrumMode           = 0 # CAENDPP_SpectrumMode_Energy
       DP.SpectrumControl[ch].TimeScale              = 1
-#    return DP
-#    print(self.boardConfig.DPPParams.M[0], self.boardConfig.DPPParams.M[1])
-#    self.boardConfig = DP
-#    print(self.boardConfig.DPPParams.M[0], self.boardConfig.DPPParams.M[1])
-#    self.Save_DGTZ_Parameters()
 
   def GetInputRange(self, ch):
     ir = c_enum()
@@ -143,10 +134,47 @@ class DGTZ:
     if R: return [ns.value, ts.value]
     else: return [False,    False   ]
 
-  def GetDAQInfo(self, ch): # Not Supported!
-    R = self.RQ(self.dpplib.CAENDPP_GetDAQInfo(self.handle, c_int32(ch), byref(self.DAQ_Info)))
-    print("DAQ Info: ****************")
-    print("ACQStatus:",   self.DAQ_Info.ACQStatus) 
-    print("RunState:",    self.DAQ_Info.RunState) 
-    print("ElapsedTime:", self.DAQ_Info.RunElapsedTimeSec)
+# HISTOGRAMs etc.
+
+  def GetStopCriteria(self, ch):
+    Criteria = ['Manual', 'LiveTime', 'RealTime', 'Counts']
+    stopCrit, number = c_enum(), c_uint64()
+    R = self.RQ(self.dpplib.CAENDPP_GetStopCriteria(self.handle, c_int32(ch), byref(stopCrit), byref(number)))
+    if R: return Criteria[stopCrit.value], number.value
+    else: return False 
+
+  def SetStopCriteria(self, ch, criteria, value):
+    if criteria in [1,2]: number = c_uint64(value*int(1e+9)) # seconds -> nanoseconds
+    else:                 number = c_uint64(value)           # e. g. counts
+    self.RQ(self.dpplib.CAENDPP_SetStopCriteria(self.handle, c_int32(ch), c_enum(criteria), number))
+
+  def GetTotalNumberOfHistograms(self, ch):
+    numHisto = c_int32()
+    R = self.RQ(self.dpplib.CAENDPP_GetTotalNumberOfHistograms(self.handle, c_int32(ch), byref(numHisto)))
+    if R: return numHisto.value
+    else: return False
+
+  def GetCurrentHistogramIndex(self, ch):
+    index = c_int32()
+    R = self.RQ(self.dpplib.CAENDPP_GetCurrentHistogramIndex(self.handle, c_int32(ch), byref(index)))
+    if R: return index.value
+    else: return False
+
+  def GetHistogramSize(self, ch, index):
+    size = c_int32()
+    R = self.RQ(self.dpplib.CAENDPP_GetHistogramSize(self.handle, c_int32(ch), c_int32(index), byref(size)))
+    if R: return size.value
+    else: return False
+    
+  def GetCurrentHistogram(self, ch, H):
+    counts, real_t, dead_t, acqStatus = c_uint32(), c_uint64(), c_uint64(), c_enum()
+    R = self.RQ(self.dpplib.CAENDPP_GetCurrentHistogram(self.handle, c_int32(ch), byref(H), byref(counts), byref(real_t), byref(dead_t), byref(acqStatus)))
+    if R: return {'counts':counts.value, 
+                  'real_t':float('{:.8f}'.format(real_t.value*1e-9)), 
+                  'dead_t':float('{:.8f}'.format(dead_t.value*1e-9)), 
+                  'acqStatus':acqStatus.value} 
+    else: return False
+    
+  def ClearCurrentHistogram(self, ch):
+    R = self.RQ(self.dpplib.CAENDPP_ClearCurrentHistogram(self.handle, c_int32(ch)))
     
