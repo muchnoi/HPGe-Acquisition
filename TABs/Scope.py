@@ -6,7 +6,6 @@ from ctypes import c_double
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import style
-style.use('dark_background')
 
 class OscCanvas(FigureCanvas):
   ArrayType = c_double*65536 # Maximum length of a waveform
@@ -28,6 +27,7 @@ class OscCanvas(FigureCanvas):
   __LREC    = 1000
   
   def __init__(self, parent=None, width=5, height=4, dpi=100):
+    style.use('dark_background')
     fig = Figure(figsize=(width, height), dpi=dpi)
     FigureCanvas.__init__(self, fig)
     self.figure.subplotpars.left, self.figure.subplotpars.right = 0.005, 0.995

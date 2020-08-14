@@ -4,13 +4,23 @@ import pickle
 class TAB_SP:
   initiated    = False
   HistoSize    = 16384
+  PageStep     = HistoSize-1
   HistoType    = c_int32*HistoSize # length of a histogram
   Histogram    = HistoType()
-  StopCriteria = ['Manual Stop', 'Stop by live time', 'Stop by real time', 'Stop by counts']
+  StopCriteria = [' Manual Stop', ' Stop by live time', ' Stop by real time', ' Stop by counts']
+  Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]
+  CntsRates    = [0, 0, 0]
+  LiveTimes    = [0.0, 0.0]
 
   def __init__(self):
     if not self.initiated:  
       for v in self.StopCriteria:  self.gui.StopCriteriaComboBox.addItem(v, userData = self.StopCriteria.index(v))
+      for v in range(9):    self.gui.ZoomComboBox.addItem(' Zoom: {}x '.format(1<<v), userData = v)
+      self.gui.HistogramScrollBar.setMinimum(0)
+      self.gui.HistogramScrollBar.setMaximum(0)
+      self.gui.HistogramScrollBar.setPageStep(self.HistoSize)
+      self.gui.ZoomComboBox.currentIndexChanged.connect(self.__Zoom)
+      self.gui.HistogramScrollBar.valueChanged.connect(self.__Shift)
       self.gui.StartStopAcqButton.clicked.connect(self.__Acquisition)
       self.gui.ClearAcqButton.clicked.connect(self.__Clear_Acquisition)
       self.gui.SaveAcqButton.clicked.connect( self.__Save_Acquisition)
@@ -43,12 +53,14 @@ class TAB_SP:
     except FileNotFoundError: self.Init_Acquisition_Parameters()
     i = self.AcqPar['StopCriteria']
     self.__SetInitialField(self.gui.StopCriteriaComboBox, i)
+    self.__SetInitialField(self.gui.ZoomComboBox, 0)
     self.__SetValue(self.gui.AcqNumberSpinBox, self.AcqPar['StopValue'][i], self.AcqPar['StopSuffix'][i], bool(i))
     self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0], ' ', True)
     self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ', True)
     self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2], ' ', True)
     self.__SetValue(self.gui.UpdateTimeSpinBox, self.AcqPar['UpdateTime'],     ' s', True)
-
+    self.gui.AcqWidget.Prepare(self)
+  
   def __SetValue(self, SB, V, S, E):
     SB.blockSignals(True); SB.setValue(V); SB.setSuffix(S); SB.setEnabled(E); SB.blockSignals(False)  
 
@@ -56,6 +68,18 @@ class TAB_SP:
     for index in range(A.count()):
       if A.itemData(index) == B: A.setCurrentIndex(index); break
 
+  def __Zoom(self,index):
+    vl = self.gui.HistogramScrollBar.value() + self.PageStep//2 
+    self.PageStep = self.HistoSize//(1<<index)-1
+    self.gui.HistogramScrollBar.setMaximum(self.HistoSize-self.PageStep-1)
+    self.gui.HistogramScrollBar.setPageStep(self.PageStep)
+    self.gui.HistogramScrollBar.setValue(vl - self.PageStep//2)
+    self.gui.AcqWidget.Show_Spectrum()
+#    print(self.PageStep, self.gui.HistogramScrollBar.value(), self.gui.HistogramScrollBar.value()+self.PageStep)
+
+  def __Shift(self):    
+    self.gui.AcqWidget.Show_Spectrum()
+    
   def __Acquisition(self):
     button  = self.gui.StartStopAcqButton.text()
     if  'Start' in button: 
@@ -82,14 +106,24 @@ class TAB_SP:
         self.start = False
       else: self.__Acquisition() 
     
-    R1 = sum(self.Histogram[self.AcqPar['ThresholdABC'][0]: self.AcqPar['ThresholdABC'][1]])
-    R2 = sum(self.Histogram[self.AcqPar['ThresholdABC'][1]: self.AcqPar['ThresholdABC'][2]]) 
-    R3 = sum(self.Histogram[self.AcqPar['ThresholdABC'][2]: self.AcqPar['ThresholdABC'][3]])
-    print(R)
-    print(R1, R2, R3)
+    self.LiveTimes[1] = R['real_t'] -  R['dead_t']
+    dT = self.LiveTimes[1] - self.LiveTimes[0]
+    self.LiveTimes[0] = self.LiveTimes[1]
+    if dT>0.0:
+      for r in [0,1,2]:
+        self.Integrals[1][r] = sum(self.Histogram[self.AcqPar['ThresholdABC'][r]: self.AcqPar['ThresholdABC'][r+1]]) 
+        self.CntsRates[r]    = int(float(self.Integrals[1][r] - self.Integrals[0][r])/dT)
+        self.Integrals[0][r] = self.Integrals[1][r]
+      print(R)
+      print(self.CntsRates)
+      self.gui.AcqWidget.Show_Spectrum()
 
   def __Clear_Acquisition(self):      
+    self.Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]
+    self.CntsRates    = [0, 0, 0]
     self.DPP.ClearCurrentHistogram(self.DPP.CH)
+    self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
+    self.gui.AcqWidget.Show_Spectrum()
 
   def __Save_Acquisition(self):      pass
 
