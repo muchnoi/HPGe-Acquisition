@@ -9,8 +9,8 @@ class TAB_SP:
   Histogram    = HistoType()
   StopCriteria = [' Manual Stop', ' Stop by live time', ' Stop by real time', ' Stop by counts']
   Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]
-  CntsRates    = [0, 0, 0]
   LiveTimes    = [0.0, 0.0]
+  ScaleList    = [[0   for i in range(512)] for j in range(3)]
 
   def __init__(self):
     if not self.initiated:  
@@ -30,6 +30,7 @@ class TAB_SP:
       self.gui.ThresholdCSpinBox.valueChanged.connect(self.__Ranges)
       self.gui.UpdateTimeSpinBox.valueChanged.connect(self.__Update_Time)
       self.gui.StopCriteriaComboBox.currentIndexChanged.connect(self.__Stop_Criteria)
+      self.gui.SpectrumRadioButton.toggled.connect(self.__Set_View)
       self.hide = [self.gui.StopCriteriaComboBox, self.gui.AcqNumberSpinBox,  self.gui.UpdateTimeSpinBox,
                    self.gui.ThresholdASpinBox,    self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox]
       self.initiated = True
@@ -59,6 +60,8 @@ class TAB_SP:
     self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ', True)
     self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2], ' ', True)
     self.__SetValue(self.gui.UpdateTimeSpinBox, self.AcqPar['UpdateTime'],     ' s', True)
+    self.gui.SpectrumRadioButton.setChecked(1)
+    self.Visualize = 'spectrum'
     self.gui.AcqWidget.Prepare(self)
   
   def __SetValue(self, SB, V, S, E):
@@ -68,6 +71,15 @@ class TAB_SP:
     for index in range(A.count()):
       if A.itemData(index) == B: A.setCurrentIndex(index); break
 
+  def __Set_View(self, index):
+    if index: 
+      self.gui.stackedWidget.setCurrentIndex(0)
+      self.Visualize = 'spectrum'
+    else:
+      self.gui.stackedWidget.setCurrentIndex(1)
+      self.Visualize = 'scaler'
+    self.gui.AcqWidget.Prepare(self)
+    
   def __Zoom(self,index):
     vl = self.gui.HistogramScrollBar.value() + self.PageStep//2 
     self.PageStep = self.HistoSize//(1<<index)-1
@@ -112,11 +124,12 @@ class TAB_SP:
     if dT>0.0:
       for r in [0,1,2]:
         self.Integrals[1][r] = sum(self.Histogram[self.AcqPar['ThresholdABC'][r]: self.AcqPar['ThresholdABC'][r+1]]) 
-        self.CntsRates[r]    = int(float(self.Integrals[1][r] - self.Integrals[0][r])/dT)
+        self.ScaleList[r].pop(0)
+        self.ScaleList[r].append(int(float(self.Integrals[1][r] - self.Integrals[0][r])/dT))
         self.Integrals[0][r] = self.Integrals[1][r]
-      print(R)
-      print(self.CntsRates)
-      self.gui.AcqWidget.Show_Spectrum()
+#    print(self.ScaleList[0][-1], self.ScaleList[1][-1], self.ScaleList[2][-1])
+    if 'spectrum' in self.Visualize:  self.gui.AcqWidget.Show_Spectrum()
+    else:                             self.gui.AcqWidget.Show_Counting()
 
   def __Clear_Acquisition(self):      
     self.Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]

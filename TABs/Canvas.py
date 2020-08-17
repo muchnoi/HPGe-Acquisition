@@ -9,7 +9,7 @@ class AcqCanvas(FigureCanvas):
   DataType = c_int64*DataSize
   __X = DataType()
   __Y = DataType()
-  __colors  = ['#080000']
+  __colors  = ['#080000', '#FF0000', '#00FF00', '#0000FF']
 
   
   def __init__(self, parent=None, width=6, height=4, dpi=100):
@@ -23,28 +23,37 @@ class AcqCanvas(FigureCanvas):
     self.plt = self.figure.add_subplot(111)
 #    self.plt.set_autoscale_on(False)
 #    self.plt.set_axisbelow(False)
-    self.plt.set_xlabel('channels', horizontalalignment='right', position=(1,25))
-    self.plt.set_ylabel('counts')
-    self.plt.patch.set_facecolor('#E0E0FF')
-    self.plt.patch.set_alpha(0.75)
-    self.plt.grid(ls = ':', c = '#000000')
-    self._plot_ptr = None
 
   def Prepare(self, ext):
-    self.H   = ext.Histogram
     self.ext = ext
+    self.plt.cla()
+    if 'spectrum' in ext.Visualize:
+      self.plt.set_xlabel('channels', horizontalalignment='right', position=(1,25))
+      self.plt.set_ylabel('counts')
+      self.plt.patch.set_facecolor('#E0E0FF')
+      self.plt.patch.set_alpha(0.75)
+      self.plt.grid(ls = ':', c = '#000000')
+    else:
+      N   = len(ext.ScaleList[0])
+      self.__T = [(el-N+1)*ext.AcqPar['UpdateTime'] for el in range(N)]
+      self.plt.set_xlabel('time [s]', horizontalalignment='right', position=(1,25))
+      self.plt.set_ylabel('rates A, B, C [counts / s]')
+      self.plt.patch.set_facecolor('#0F0F0F')
+      self.plt.patch.set_alpha(0.75)
+      self.plt.grid(ls = ':', c = '#FFFFFF')
+    self._plot_ptr = None
+      
 #    ext.gui.addToolBar(0x4, NavigationToolbar(self, ext.gui))   
   
   def Show_Spectrum(self):
     cmin = self.ext.gui.HistogramScrollBar.value()
     cmax = self.ext.gui.HistogramScrollBar.value() + self.ext.PageStep
     step = (self.ext.PageStep+1)/self.DataSize
-#    print(cmin, cmax, step)
     for x in range(self.DataSize):
       i = int(cmin + x*step)
       j = int(i + step)
-      if i==j: self.__Y[x] = self.H[i]
-      else:    self.__Y[x] = sum(self.H[i:j])
+      if i==j: self.__Y[x] = self.ext.Histogram[i]
+      else:    self.__Y[x] = sum(self.ext.Histogram[i:j])
       self.__X[x] = (i+j)//2
     if self._plot_ptr is None:
       self._plot_ptr  = self.plt.step(self.__X, self.__Y, color = self.__colors[0])[0]
@@ -58,5 +67,20 @@ class AcqCanvas(FigureCanvas):
       else:
         self.plt.set_yscale('linear')
         self.plt.set_ylim(top  = int(1.1*max(self.__Y) + 1), bottom = 0)
+    self.draw()
+
+  def Show_Counting(self):
+    if self._plot_ptr is None:
+      A  = self.plt.step(self.__T, self.ext.ScaleList[0], color = self.__colors[1])[0]
+      B  = self.plt.step(self.__T, self.ext.ScaleList[1], color = self.__colors[2])[0]
+      C  = self.plt.step(self.__T, self.ext.ScaleList[2], color = self.__colors[3])[0]
+      self._plot_ptr = [A, B, C]
+    else:
+      self._plot_ptr[0].set_ydata(self.ext.ScaleList[0])
+      self._plot_ptr[1].set_ydata(self.ext.ScaleList[1])
+      self._plot_ptr[2].set_ydata(self.ext.ScaleList[2])
+      self.plt.set_ylim(top  = int(1.1*max(self.ext.ScaleList[0] + self.ext.ScaleList[1] + self.ext.ScaleList[2]) + 1), bottom = 0)
+#      print(self.__T)
+#      print(self.self._plot_ptr[0])
     self.draw()
 
