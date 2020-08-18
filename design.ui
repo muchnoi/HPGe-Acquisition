@@ -1715,7 +1715,7 @@ margin-top: 1 1ex;}
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page_1">
            <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -1775,21 +1775,21 @@ margin-top: 1 1ex;}
           <widget class="QWidget" name="page_2">
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item alignment="Qt::AlignHCenter">
-             <widget class="QCheckBox" name="AcheckBox">
+             <widget class="QCheckBox" name="ACheckBox">
               <property name="text">
                <string>Rate A</string>
               </property>
              </widget>
             </item>
             <item alignment="Qt::AlignHCenter">
-             <widget class="QCheckBox" name="BcheckBox">
+             <widget class="QCheckBox" name="BCheckBox">
               <property name="text">
                <string>Rate B</string>
               </property>
              </widget>
             </item>
             <item alignment="Qt::AlignHCenter">
-             <widget class="QCheckBox" name="CcheckBox">
+             <widget class="QCheckBox" name="CCheckBox">
               <property name="text">
                <string>Rate C</string>
               </property>

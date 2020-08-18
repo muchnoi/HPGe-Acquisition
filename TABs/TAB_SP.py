@@ -10,10 +10,11 @@ class TAB_SP:
   StopCriteria = [' Manual Stop', ' Stop by live time', ' Stop by real time', ' Stop by counts']
   Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]
   LiveTimes    = [0.0, 0.0]
-  ScaleList    = [[0   for i in range(512)] for j in range(3)]
+  ScaleSize    = 512
 
   def __init__(self):
     if not self.initiated:  
+      self.ScaleList    = [[0 for i in range(self.ScaleSize)] for j in range(3)]
       for v in self.StopCriteria:  self.gui.StopCriteriaComboBox.addItem(v, userData = self.StopCriteria.index(v))
       for v in range(9):    self.gui.ZoomComboBox.addItem(' Zoom: {}x '.format(1<<v), userData = v)
       self.gui.HistogramScrollBar.setMinimum(0)
@@ -60,7 +61,10 @@ class TAB_SP:
     self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ', True)
     self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2], ' ', True)
     self.__SetValue(self.gui.UpdateTimeSpinBox, self.AcqPar['UpdateTime'],     ' s', True)
-    self.gui.SpectrumRadioButton.setChecked(1)
+    self.gui.SpectrumRadioButton.setChecked(True)
+    self.gui.ACheckBox.setChecked(True)
+    self.gui.BCheckBox.setChecked(True)
+    self.gui.CCheckBox.setChecked(True)
     self.Visualize = 'spectrum'
     self.gui.AcqWidget.Prepare(self)
   
@@ -132,11 +136,13 @@ class TAB_SP:
     else:                             self.gui.AcqWidget.Show_Counting()
 
   def __Clear_Acquisition(self):      
-    self.Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]
-    self.CntsRates    = [0, 0, 0]
-    self.DPP.ClearCurrentHistogram(self.DPP.CH)
-    self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
-    self.gui.AcqWidget.Show_Spectrum()
+    self.ScaleList    = [[0   for i in range(self.ScaleSize)] for j in range(3)]
+    if self.gui.SpectrumRadioButton.isChecked():
+      self.DPP.ClearCurrentHistogram(self.DPP.CH)
+      self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
+      self.gui.AcqWidget.Show_Spectrum()
+    else:
+      self.gui.AcqWidget.Show_Counting()
 
   def __Save_Acquisition(self):      pass
 
