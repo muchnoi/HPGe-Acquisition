@@ -2117,7 +2117,7 @@ margin-top: 1 1ex;}
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QProgressBar" name="progressBar">
+               <widget class="QProgressBar" name="DeadTimeBar">
                 <property name="value">
                  <number>24</number>
                 </property>
@@ -2131,7 +2131,7 @@ margin-top: 1 1ex;}
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QProgressBar" name="progressBar_3">
+               <widget class="QProgressBar" name="ProgressBar">
                 <property name="value">
                  <number>24</number>
                 </property>

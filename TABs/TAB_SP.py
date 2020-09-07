@@ -13,8 +13,9 @@ class TAB_SP:
   ScaleSize    = 512
 
   def __init__(self):
-    if not self.initiated:  
-      self.ScaleList    = [[0 for i in range(self.ScaleSize)] for j in range(3)]
+    if not self.initiated:
+      self.Progress  = 0  
+      self.ScaleList = [[0 for i in range(self.ScaleSize)] for j in range(3)]
       for v in self.StopCriteria:  self.gui.StopCriteriaComboBox.addItem(v, userData = self.StopCriteria.index(v))
       for v in range(9):    self.gui.ZoomComboBox.addItem(' Zoom: {}x '.format(1<<v), userData = v)
       self.gui.HistogramScrollBar.setMinimum(0)
@@ -56,6 +57,8 @@ class TAB_SP:
     i = self.AcqPar['StopCriteria']
     self.__SetInitialField(self.gui.StopCriteriaComboBox, i)
     self.__SetInitialField(self.gui.ZoomComboBox, 0)
+    self.gui.ProgressBar.setValue(0)
+    self.gui.DeadTimeBar.setValue(0)
     self.__SetValue(self.gui.AcqNumberSpinBox, self.AcqPar['StopValue'][i], self.AcqPar['StopSuffix'][i], bool(i))
     self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0], ' ', True)
     self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ', True)
@@ -101,6 +104,7 @@ class TAB_SP:
     if  'Start' in button: 
       self.start = True
       for el in self.hide: el.setEnabled(False)
+      if self.Progress==100: self.__Clear_Histogram()
       self.gui.StartStopAcqButton.setText('Stop')
       tt = int(1000*self.AcqPar['UpdateTime']) # seconds -> milliseconds
       self.gui.timerB.start(tt)
@@ -115,6 +119,13 @@ class TAB_SP:
   def __Acquire(self):
     if self.gui.tab_SP.isHidden(): self.__Acquisition()
     R = self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
+    if R['real_t']>0:
+      if   self.AcqPar['StopCriteria'] == 0: self.Progress = 0
+      elif self.AcqPar['StopCriteria'] == 1: self.Progress = 100 * (R['real_t'] - R['dead_t']) // self.AcqPar['StopValue'][1]
+      elif self.AcqPar['StopCriteria'] == 2: self.Progress = 100 *  R['real_t']                // self.AcqPar['StopValue'][2]
+      elif self.AcqPar['StopCriteria'] == 3: self.Progress = 100 *  R['counts']                // self.AcqPar['StopValue'][3]
+      self.gui.ProgressBar.setValue(self.Progress)
+      self.gui.DeadTimeBar.setValue(100*R['dead_t'] // R['real_t'])
     
     if not R['acqStatus']:  # not aquiring now  
       if self.start:
@@ -138,11 +149,17 @@ class TAB_SP:
   def __Clear_Acquisition(self):      
     self.ScaleList    = [[0   for i in range(self.ScaleSize)] for j in range(3)]
     if self.gui.SpectrumRadioButton.isChecked():
-      self.DPP.ClearCurrentHistogram(self.DPP.CH)
-      self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
-      self.gui.AcqWidget.Show_Spectrum()
+      self.__Clear_Histogram()
     else:
       self.gui.AcqWidget.Show_Counting()
+  
+  def __Clear_Histogram(self):
+    self.Progress = 0
+    self.gui.ProgressBar.setValue(0)
+    self.gui.DeadTimeBar.setValue(0)
+    self.DPP.ClearCurrentHistogram(self.DPP.CH)
+    self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
+    self.gui.AcqWidget.Show_Spectrum()
 
   def __Save_Acquisition(self):      pass
 
@@ -163,7 +180,7 @@ class TAB_SP:
   def __Stop_Value(self):    
     self.AcqPar['StopValue'][self.AcqPar['StopCriteria']] = self.gui.AcqNumberSpinBox.value()
     self.DPP.SetStopCriteria(self.DPP.CH, self.AcqPar['StopCriteria'], self.AcqPar['StopValue'][self.AcqPar['StopCriteria']])
-    print(self.DPP.GetStopCriteria(self.DPP.CH))
+#    print(self.DPP.GetStopCriteria(self.DPP.CH))
 
   def __Update_Time(self):
      self.AcqPar['UpdateTime'] = self.gui.UpdateTimeSpinBox.value()

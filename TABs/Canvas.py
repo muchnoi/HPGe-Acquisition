@@ -10,7 +10,6 @@ class AcqCanvas(FigureCanvas):
   __X = DataType()
   __Y = DataType()
   __colors  = ['#101010', '#FF0000', '#00FF00', '#FFFF00']
-
   
   def __init__(self, parent=None, width=6, height=4, dpi=100):
     style.use('default')
@@ -39,7 +38,7 @@ class AcqCanvas(FigureCanvas):
       self.__Z = [None                              for el in range(N)]
       self.plt.set_xlabel('time [s]', horizontalalignment='right', position=(1,25))
       self.plt.set_ylabel('rates A, B, C [counts / s]')
-      self.plt.patch.set_facecolor('#0F0F0F')
+      self.plt.patch.set_facecolor('#000000')
       self.plt.patch.set_alpha(0.75)
       self.plt.grid(ls = ':', c = '#F0F0A0')
     self._plot_ptr = None
