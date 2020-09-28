@@ -1,5 +1,5 @@
 from ctypes import c_int32
-import pickle
+import pickle, time, gzip
 
 class TAB_SP:
   initiated    = False
@@ -34,7 +34,8 @@ class TAB_SP:
       self.gui.StopCriteriaComboBox.currentIndexChanged.connect(self.__Stop_Criteria)
       self.gui.SpectrumRadioButton.toggled.connect(self.__Set_View)
       self.hide = [self.gui.StopCriteriaComboBox, self.gui.AcqNumberSpinBox,  self.gui.UpdateTimeSpinBox,
-                   self.gui.ThresholdASpinBox,    self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox]
+                   self.gui.ThresholdASpinBox,    self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox, 
+                   self.gui.SaveAcqButton]
       self.initiated = True
     self.Read_Scope_Parameters()
     self.Read_Acquisition_Parameters()
@@ -107,12 +108,14 @@ class TAB_SP:
       if self.Progress==100: self.__Clear_Histogram()
       self.gui.StartStopAcqButton.setText('Stop')
       tt = int(1000*self.AcqPar['UpdateTime']) # seconds -> milliseconds
+      self.Time_Start = time.localtime()
       self.gui.timerB.start(tt)
       self.gui.timerB.timeout.connect(self.__Acquire)
     elif 'Stop' in button: 
       self.gui.timerB.timeout.disconnect(self.__Acquire)
       self.gui.timerB.stop()
       self.DPP.StopAcquisition(   self.DPP.CH)
+      self.Time_Stop = time.localtime()
       self.gui.StartStopAcqButton.setText('Start')
       for el in self.hide: el.setEnabled(True)
 
@@ -155,13 +158,22 @@ class TAB_SP:
   
   def __Clear_Histogram(self):
     self.Progress = 0
+    self.Time_Start = time.localtime()
     self.gui.ProgressBar.setValue(0)
     self.gui.DeadTimeBar.setValue(0)
     self.DPP.ClearCurrentHistogram(self.DPP.CH)
     self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
     self.gui.AcqWidget.Show_Spectrum()
 
-  def __Save_Acquisition(self):      pass
+  def __Save_Acquisition(self): 
+    filename = b'%02d%02d%02d.wall.gz' % (self.Time_Stop.tm_hour, self.Time_Stop.tm_min, self.Time_Stop.tm_sec)     
+    with gzip.open(filename, 'wb') as f:
+      f.write(b'# Date     %4d%02d%02d\n' %  (self.Time_Start.tm_year, self.Time_Start.tm_mon, self.Time_Start.tm_mday))
+      f.write(b'# eDate    %4d%02d%02d\n' %  (self.Time_Stop.tm_year,  self.Time_Stop.tm_mon,  self.Time_Stop.tm_mday))
+      f.write(b'# Begin    %d\n' % (self.Time_Start.tm_hour*3600 + self.Time_Start.tm_min*60 + self.Time_Start.tm_sec))
+      f.write(b'# End      %d\n' % (self.Time_Stop.tm_hour *3600 + self.Time_Stop.tm_min *60 + self.Time_Stop.tm_sec))
+#    print(time.asctime(self.Time_Start), time.mktime(self.Time_Start))
+#    print(time.asctime(self.Time_Stop ), time.mktime(self.Time_Stop ))
 
   def __Stop_Criteria(self, index):
     c = self.gui.StopCriteriaComboBox.itemData(index)

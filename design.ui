@@ -67,7 +67,7 @@ QDoubleSpinBox {background-color: #FFFFFF;}
 </string>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_CF">
        <property name="font">
@@ -1076,16 +1076,6 @@ margin-top: 1 1ex;}
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="PeakMean">
-                   <property name="font">
-                    <font>
-                     <family>Noto Mono</family>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <widget class="QDoubleSpinBox" name="PeakHoldoffSpinBox">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1113,6 +1103,16 @@ margin-top: 1 1ex;}
                    </property>
                    <property name="value">
                     <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="PeakMean">
+                   <property name="font">
+                    <font>
+                     <family>Noto Mono</family>
+                     <pointsize>9</pointsize>
+                    </font>
                    </property>
                   </widget>
                  </item>
