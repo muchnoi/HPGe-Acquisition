@@ -7,7 +7,8 @@ import sys, design
 class Application(QtWidgets.QMainWindow, design.Ui_MainWindow):
   def __init__(self): 
     super().__init__()
-    self.setupUi(self)  
+    self.setupUi(self)
+    self.setWindowTitle('Digital MCA Control & Acquisition')
     self.actionExit.triggered.connect(self.close)
     self.timerA = QTimer()
     self.timerB = QTimer()

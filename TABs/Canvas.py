@@ -9,6 +9,7 @@ class AcqCanvas(FigureCanvas):
   DataType = c_int64*DataSize
   __X = DataType()
   __Y = DataType()
+  __Z = None
   __colors  = ['#101010', '#FF0000', '#00FF00', '#FFFF00']
   
   def __init__(self, parent=None, width=6, height=4, dpi=100):
@@ -26,6 +27,7 @@ class AcqCanvas(FigureCanvas):
   def Prepare(self, ext):
     self.ext = ext
     self.plt.cla()
+    if self.__Z is None: self.__Z = [None for el in range(ext.ScaleSize)]
     if 'spectrum' in ext.Visualize:
       self.plt.set_xlabel('channels', horizontalalignment='right', position=(1,25))
       self.plt.set_ylabel('counts')
@@ -33,13 +35,11 @@ class AcqCanvas(FigureCanvas):
       self.plt.patch.set_alpha(0.75)
       self.plt.grid(ls = ':', c = '#000000')
     else:
-      N   = ext.ScaleSize
-      self.__T = [(el-N+1)*ext.AcqPar['UpdateTime'] for el in range(N)]
-      self.__Z = [None                              for el in range(N)]
+      self.__T = [(el - ext.ScaleSize + 1)*ext.AcqPar['UpdateTime'] for el in range(ext.ScaleSize)]
       self.plt.set_xlabel('time [s]', horizontalalignment='right', position=(1,25))
       self.plt.set_ylabel('rates A, B, C [counts / s]')
       self.plt.patch.set_facecolor('#000000')
-      self.plt.patch.set_alpha(0.75)
+      self.plt.patch.set_alpha(0.99)
       self.plt.grid(ls = ':', c = '#F0F0A0')
     self._plot_ptr = None
       

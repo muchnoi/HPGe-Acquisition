@@ -1,5 +1,5 @@
 from ctypes import c_int32
-import pickle, time, gzip
+import pickle, time, gzip, os, configparser
 
 class TAB_SP:
   initiated    = False
@@ -11,9 +11,12 @@ class TAB_SP:
   Integrals    = [[0,  0,  0 ], [0,  0,  0 ]]
   LiveTimes    = [0.0, 0.0]
   ScaleSize    = 512
+  configure    = configparser.ConfigParser()
 
   def __init__(self):
     if not self.initiated:
+      self.configure.read('environment.cfg')
+      self.data_folder = self.configure.get('Paths','data_folder')
       self.Progress  = 0  
       self.ScaleList = [[0 for i in range(self.ScaleSize)] for j in range(3)]
       for v in self.StopCriteria:  self.gui.StopCriteriaComboBox.addItem(v, userData = self.StopCriteria.index(v))
@@ -37,6 +40,7 @@ class TAB_SP:
                    self.gui.ThresholdASpinBox,    self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox, 
                    self.gui.SaveAcqButton]
       self.initiated = True
+      self.last_response = self.prev_response = None
     self.Read_Scope_Parameters()
     self.Read_Acquisition_Parameters()
     self.DPP.acqMode = 1 # Waveform = 0, Histogram = 1
@@ -83,10 +87,13 @@ class TAB_SP:
     if index: 
       self.gui.stackedWidget.setCurrentIndex(0)
       self.Visualize = 'spectrum'
+      self.gui.AcqWidget.Prepare(self)
+      self.gui.AcqWidget.Show_Spectrum()
     else:
       self.gui.stackedWidget.setCurrentIndex(1)
       self.Visualize = 'scaler'
-    self.gui.AcqWidget.Prepare(self)
+      self.gui.AcqWidget.Prepare(self)
+      self.gui.AcqWidget.Show_Counting()
     
   def __Zoom(self,index):
     vl = self.gui.HistogramScrollBar.value() + self.PageStep//2 
@@ -134,6 +141,12 @@ class TAB_SP:
       if self.start:
         self.DPP.StartAcquisition( self.DPP.CH)
         self.start = False
+      elif self.gui.AutoRestartCheckBox.isChecked():
+        print ('auto mode')
+        self.Time_Stop = time.localtime()
+        self.__Save_Acquisition()
+        self.__Clear_Histogram()
+        self.start = True
       else: self.__Acquisition() 
     
     self.LiveTimes[1] = R['real_t'] -  R['dead_t']
@@ -141,19 +154,22 @@ class TAB_SP:
     self.LiveTimes[0] = self.LiveTimes[1]
     if dT>0.0:
       for r in [0,1,2]:
-        self.Integrals[1][r] = sum(self.Histogram[self.AcqPar['ThresholdABC'][r]: self.AcqPar['ThresholdABC'][r+1]]) 
-        self.ScaleList[r].pop(0)
-        self.ScaleList[r].append(int(float(self.Integrals[1][r] - self.Integrals[0][r])/dT))
+        self.Integrals[1][r] = sum(self.Histogram[self.AcqPar['ThresholdABC'][r]: self.AcqPar['ThresholdABC'][r+1]])
+        rate = int(float(self.Integrals[1][r] - self.Integrals[0][r])/dT)
+        if rate >= 0:
+          self.ScaleList[r].pop(0)
+          self.ScaleList[r].append(rate)
         self.Integrals[0][r] = self.Integrals[1][r]
 #    print(self.ScaleList[0][-1], self.ScaleList[1][-1], self.ScaleList[2][-1])
     if 'spectrum' in self.Visualize:  self.gui.AcqWidget.Show_Spectrum()
     else:                             self.gui.AcqWidget.Show_Counting()
+    self.last_response = R
 
   def __Clear_Acquisition(self):      
-    self.ScaleList    = [[0   for i in range(self.ScaleSize)] for j in range(3)]
     if self.gui.SpectrumRadioButton.isChecked():
       self.__Clear_Histogram()
     else:
+      self.ScaleList    = [[0   for i in range(self.ScaleSize)] for j in range(3)]
       self.gui.AcqWidget.Show_Counting()
   
   def __Clear_Histogram(self):
@@ -163,15 +179,44 @@ class TAB_SP:
     self.gui.DeadTimeBar.setValue(0)
     self.DPP.ClearCurrentHistogram(self.DPP.CH)
     self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
+    self.gui.AcqWidget.Prepare(self)
     self.gui.AcqWidget.Show_Spectrum()
 
-  def __Save_Acquisition(self): 
-    filename = b'%02d%02d%02d.wall.gz' % (self.Time_Stop.tm_hour, self.Time_Stop.tm_min, self.Time_Stop.tm_sec)     
+  def __Save_Acquisition(self):
+    if self.last_response == self.prev_response:
+      self.gui.statusBar().showMessage('Nothing was saved')
+      return
+
+    self.gui.statusBar().showMessage('Saving new file...')
+    folder = '%s/%4d/%04d%02d%02d' % (self.data_folder, self.Time_Stop.tm_year, self.Time_Stop.tm_year, self.Time_Start.tm_mon, self.Time_Start.tm_mday)
+    if not os.path.exists(folder): os.makedirs(folder)
+    filename = folder + '/%02d%02d%02d.wall.gz' % (self.Time_Stop.tm_hour, self.Time_Stop.tm_min, self.Time_Stop.tm_sec)
+    
     with gzip.open(filename, 'wb') as f:
-      f.write(b'# Date     %4d%02d%02d\n' %  (self.Time_Start.tm_year, self.Time_Start.tm_mon, self.Time_Start.tm_mday))
-      f.write(b'# eDate    %4d%02d%02d\n' %  (self.Time_Stop.tm_year,  self.Time_Stop.tm_mon,  self.Time_Stop.tm_mday))
-      f.write(b'# Begin    %d\n' % (self.Time_Start.tm_hour*3600 + self.Time_Start.tm_min*60 + self.Time_Start.tm_sec))
-      f.write(b'# End      %d\n' % (self.Time_Stop.tm_hour *3600 + self.Time_Stop.tm_min *60 + self.Time_Stop.tm_sec))
+      f.write(b'# Date        %4d%02d%02d\n' %  (self.Time_Start.tm_year, self.Time_Start.tm_mon, self.Time_Start.tm_mday))
+      f.write(b'# eDate       %4d%02d%02d\n' %  (self.Time_Stop.tm_year,  self.Time_Stop.tm_mon,  self.Time_Stop.tm_mday))
+      f.write(b'# Begin       %d\n'   % (self.Time_Start.tm_hour*3600 + self.Time_Start.tm_min*60 + self.Time_Start.tm_sec))
+      f.write(b'# End         %d\n'   % (self.Time_Stop.tm_hour *3600 + self.Time_Stop.tm_min *60 + self.Time_Stop.tm_sec))
+      f.write(b'# Treal       %.2f\n' % self.last_response['real_t'])
+      f.write(b'# Tlive       %.2f\n' % (self.last_response['real_t'] - self.last_response['dead_t']))
+      f.write(b'# ModelMCA    %s\n'   % self.DPP.boardInfo.ModelName)
+      f.write(b'# SerialNumer %d\n'   % self.DPP.boardInfo.SerialNumber)
+      f.write(b'# HV          %d\n'   % self.DPP.ReadHVChannelMonitoring(self.DPP.CH)[0])
+      f.write(b'# LLD         %d\n'   % self.DPP.boardConfig.DPPParams.thr[self.DPP.CH])
+      f.write(b'# RangeADC    %d\n'   % self.DPP.inputRange[self.DPP.CH])
+      f.write(b'# FineGain    %.5f\n' % self.DPP.boardConfig.DPPParams.enf[ self.DPP.CH])
+      f.write(b'# OffsetDC    %d\n'   % self.DPP.boardConfig.DCoffset[self.DPP.CH])
+      f.write(b'# RiseTime    %d\n'   % self.DPP.boardConfig.DPPParams.k[   self.DPP.CH])
+      f.write(b'# DecayTime   %d\n'   % self.DPP.boardConfig.DPPParams.M[   self.DPP.CH])
+      f.write(b'# FlatTop     %d\n'   % self.DPP.boardConfig.DPPParams.m[   self.DPP.CH])
+      f.write(b'# PeakDelay   %d\n'   % self.DPP.boardConfig.DPPParams.ftd[ self.DPP.CH])
+      f.write(b'# PeakHoldoff %d\n'   % self.DPP.boardConfig.DPPParams.pkho[self.DPP.CH])
+      f.write(b'# BaseHoldoff %d\n'   % self.DPP.boardConfig.DPPParams.blho[self.DPP.CH])
+      for c in range(self.HistoSize):  f.write(b'%d\n' % self.Histogram[c])
+
+#      print (self.DPP.GetInfoDict("InputRangeNum", "InputRanges"))
+    self.gui.statusBar().showMessage('New file %s was saved on %s' % (filename, time.asctime()))
+    self.prev_response = self.last_response
 #    print(time.asctime(self.Time_Start), time.mktime(self.Time_Start))
 #    print(time.asctime(self.Time_Stop ), time.mktime(self.Time_Stop ))
 
