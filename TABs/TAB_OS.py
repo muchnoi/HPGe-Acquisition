@@ -119,10 +119,10 @@ class TAB_OS:
     POL = self.DPP.boardConfig.PulsePolarity[self.DPP.CH] 
     INR = self.DPP.inputRange[          self.DPP.CH]
     DCO = self.DPP.boardConfig.DCoffset[self.DPP.CH]   # in units of LSB 
-    if   POL is 0: 
+    if   POL == 0: 
       if DCO < 25000: zero = 16989.5 - 0.273058 * DCO  # positive polarity
       else:           zero = 17035.6 - 0.274045 * DCO  # positive polarity
-    elif POL is 1: 
+    elif POL == 1: 
       if DCO < 25000: zero = -606.92 + 0.272018 * DCO  # negative polarity
       else:           zero = -653.33 + 0.274035 * DCO  # negative polarity
     gain = self.DPP.inputRanges[INR]/(1<<self.DPP.boardInfo.ADC_NBits)

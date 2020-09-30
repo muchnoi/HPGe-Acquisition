@@ -63,9 +63,9 @@ class CAEN_DPP(HVPS, DGTZ):
       
   def Board_Reconfigure(self, ch):
     status = self.IsChannelAcquiring(ch)
-    if status is not 0: self.StopAcquisition(ch)
+    if status != 0: self.StopAcquisition(ch)
     self.SetBoardConfiguration()
-    if status is not 0: self.StartAcquisition(ch)
+    if status != 0: self.StartAcquisition(ch)
 
 
 

@@ -71,8 +71,8 @@ class OscCanvas(FigureCanvas):
     if self.gui.tab_OS.isHidden(): self.ButtonPressed()
     else:
       status = self.DPP.IsChannelAcquiring(self.DPP.CH)
-      if   status is 0:      self.DPP.StartAcquisition( self.DPP.CH)
-      elif status is False:  self.gui.timerB.timeout.disconnect(self.Measure)
+      if   status == 0:      self.DPP.StartAcquisition( self.DPP.CH)
+      elif status == False:  self.gui.timerB.timeout.disconnect(self.Measure)
       self._nsample, self._tsamp = self.DPP.GetWaveform(self.DPP.CH)
       if self.__single:      self.DPP.StopAcquisition(   self.DPP.CH)
       self.Legend()
@@ -84,10 +84,10 @@ class OscCanvas(FigureCanvas):
     Bg,  Bo  = self.__gain/self.__BScale, self.__BShift/self.__BScale
     Tg,  To  = self._tsamp/self.__TScale, self.__TShift/self.__TScale
         
-    if self.DPP.boardConfig.WFParams.vp1 is 0:
+    if self.DPP.boardConfig.WFParams.vp1 == 0:
       As = self.__zero * Ag;  Amin = Ao - As;  Amax = Amin + Ag*self.maxch
     else: As, Amin, Amax = 0, -5,  5
-    if self.DPP.boardConfig.WFParams.vp2 is 0:
+    if self.DPP.boardConfig.WFParams.vp2 == 0:
       Bs = self.__zero * Bg;  Bmin = Bo - Bs;  Bmax = Bmin + Bg*self.maxch
     else: Bs, Bmin, Bmax = 0, -5,  5
 

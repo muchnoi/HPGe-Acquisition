@@ -223,11 +223,11 @@ class TAB_SP:
   def __Stop_Criteria(self, index):
     c = self.gui.StopCriteriaComboBox.itemData(index)
     self.AcqPar['StopCriteria'] = c
-    if c is 0:
+    if c == 0:
       self.gui.AcqNumberSpinBox.setMinimum( 1); self.gui.AcqNumberSpinBox.setMaximum(1)
     elif c in [1,2]: 
       self.gui.AcqNumberSpinBox.setMinimum(10); self.gui.AcqNumberSpinBox.setMaximum(10000)
-    elif c is 3:     
+    elif c == 3:     
       self.gui.AcqNumberSpinBox.setMinimum(10); self.gui.AcqNumberSpinBox.setMaximum(10000000)
     self.gui.AcqNumberSpinBox.setValue(self.AcqPar['StopValue'][c])
     self.gui.AcqNumberSpinBox.setSuffix(self.AcqPar['StopSuffix'][c])
