@@ -34,6 +34,7 @@ class AcqCanvas(FigureCanvas):
       self.plt.patch.set_facecolor('#E0E0FF')
       self.plt.patch.set_alpha(0.75)
       self.plt.grid(ls = ':', c = '#000000')
+      self._pH = None
     else:
       self.__T = [(el - ext.ScaleSize + 1)*ext.AcqPar['UpdateTime'] for el in range(ext.ScaleSize)]
       self.plt.set_xlabel('time [s]', horizontalalignment='right', position=(1,25))
@@ -41,7 +42,7 @@ class AcqCanvas(FigureCanvas):
       self.plt.patch.set_facecolor('#000000')
       self.plt.patch.set_alpha(0.99)
       self.plt.grid(ls = ':', c = '#F0F0A0')
-    self._plot_ptr = None
+      self._pS = None
       
 #    ext.gui.addToolBar(0x4, NavigationToolbar(self, ext.gui))   
   
@@ -55,36 +56,35 @@ class AcqCanvas(FigureCanvas):
       if i==j: self.__Y[x] = self.ext.Histogram[i]
       else:    self.__Y[x] = sum(self.ext.Histogram[i:j])
       self.__X[x] = (i+j)//2
-    if self._plot_ptr is None:
-      self._plot_ptr  = self.plt.step(self.__X, self.__Y, color = self.__colors[0])[0]
+    if self._pH is None:
+      self._pH  = self.plt.step(self.__X, self.__Y, linewidth = 1, color = self.__colors[0])[0]
     else:
-      self._plot_ptr.set_xdata(self.__X)
-      self._plot_ptr.set_ydata(self.__Y)
+      self._pH.set_xdata(self.__X)
+      self._pH.set_ydata(self.__Y)
       self.plt.set_xlim(left = cmin,                       right  = cmax + step)
       if self.ext.gui.LogScaleCheckBox.isChecked():
         self.plt.set_yscale('log')
-        self.plt.set_ylim(top  = int(1.1*max(self.__Y) + 1), bottom = 1)
+        self.plt.set_ylim(top  = int(1.1*max(self.__Y) + 1), bottom = 0.1)
       else:
         self.plt.set_yscale('linear')
         self.plt.set_ylim(top  = int(1.1*max(self.__Y) + 1), bottom = 0)
     self.draw()
 
   def Show_Counting(self):
-    if self._plot_ptr is None:
-      A  = self.plt.step(self.__T, self.ext.ScaleList[0], color = self.__colors[1])[0]
-      B  = self.plt.step(self.__T, self.ext.ScaleList[1], color = self.__colors[2])[0]
-      C  = self.plt.step(self.__T, self.ext.ScaleList[2], color = self.__colors[3])[0]
+    L = self.ext.ScalesMax
+    if self._pS is None:
+      A  = self.plt.step(self.__T, self.ext.ScaleList[0], linewidth = 1, color = self.__colors[1])[0]
+      B  = self.plt.step(self.__T, self.ext.ScaleList[1], linewidth = 1, color = self.__colors[2])[0]
+      C  = self.plt.step(self.__T, self.ext.ScaleList[2], linewidth = 1, color = self.__colors[3])[0]
       self.plt.legend((A, B, C), ('Rate A', 'Rate B', 'Rate C'))
-      self._plot_ptr = [A, B, C]
+      self._pS = [A, B, C]
     else:
-      if self.ext.gui.ACheckBox.isChecked(): self._plot_ptr[0].set_ydata(self.ext.ScaleList[0])
-      else:                                  self._plot_ptr[0].set_ydata(self.__Z)
-      if self.ext.gui.BCheckBox.isChecked(): self._plot_ptr[1].set_ydata(self.ext.ScaleList[1])
-      else:                                  self._plot_ptr[1].set_ydata(self.__Z)
-      if self.ext.gui.CCheckBox.isChecked(): self._plot_ptr[2].set_ydata(self.ext.ScaleList[2])
-      else:                                  self._plot_ptr[2].set_ydata(self.__Z)
-      self.plt.set_ylim(top  = int(1.1*max(self.ext.ScaleList[0] + self.ext.ScaleList[1] + self.ext.ScaleList[2]) + 1), bottom = 0)
-#      print(self.__T)
-#      print(self.self._plot_ptr[0])
+      if self.ext.gui.ACheckBox.isChecked(): self._pS[0].set_ydata(self.ext.ScaleList[0])
+      else:                                  self._pS[0].set_ydata(self.__Z);  L[0] = 0
+      if self.ext.gui.BCheckBox.isChecked(): self._pS[1].set_ydata(self.ext.ScaleList[1])
+      else:                                  self._pS[1].set_ydata(self.__Z);  L[1] = 0
+      if self.ext.gui.CCheckBox.isChecked(): self._pS[2].set_ydata(self.ext.ScaleList[2])
+      else:                                  self._pS[2].set_ydata(self.__Z);  L[2] = 0
+    self.plt.set_ylim(top = int(1.1*max(L) + 1), bottom = 0)
     self.draw()
 

@@ -19,6 +19,7 @@ class TAB_SP:
       self.data_folder = self.configure.get('Paths','data_folder')
       self.Progress  = 0  
       self.ScaleList = [[0 for i in range(self.ScaleSize)] for j in range(3)]
+      self.ScalesMax = [0, 0, 0]
       for v in self.StopCriteria:  self.gui.StopCriteriaComboBox.addItem(v, userData = self.StopCriteria.index(v))
       for v in range(9):    self.gui.ZoomComboBox.addItem(' Zoom: {}x '.format(1<<v), userData = v)
       self.gui.HistogramScrollBar.setMinimum(0)
@@ -114,13 +115,12 @@ class TAB_SP:
       for el in self.hide: el.setEnabled(False)
       if self.Progress==100: self.__Clear_Histogram()
       self.gui.StartStopAcqButton.setText('Stop')
+      self.gui.AcqWidget.Prepare(self)
       tt = int(1000*self.AcqPar['UpdateTime']) # seconds -> milliseconds
       self.Time_Start = time.localtime()
-      self.gui.timerB.start(tt)
-      self.gui.timerB.timeout.connect(self.__Acquire)
+      self.gui.timerB.start(tt); self.gui.timerB.timeout.connect(self.__Acquire)
     elif 'Stop' in button: 
-      self.gui.timerB.timeout.disconnect(self.__Acquire)
-      self.gui.timerB.stop()
+      self.gui.timerB.timeout.disconnect(self.__Acquire); self.gui.timerB.stop()
       self.DPP.StopAcquisition(   self.DPP.CH)
       self.Time_Stop = time.localtime()
       self.gui.StartStopAcqButton.setText('Start')
@@ -129,6 +129,22 @@ class TAB_SP:
   def __Acquire(self):
     if self.gui.tab_SP.isHidden(): self.__Acquisition()
     R = self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
+
+    if not R['acqStatus']:  # if not aquiring now  
+      if self.start:        # if acquisition is just started
+        self.DPP.StartAcquisition( self.DPP.CH)
+        self.start = False
+      elif self.gui.AutoRestartCheckBox.isChecked(): # if acquisition is finished, start new one
+        print('auto mode')
+        self.gui.timerB.timeout.disconnect(self.__Acquire); self.gui.timerB.stop()
+        self.DPP.StopAcquisition(   self.DPP.CH)
+        self.Time_Stop = time.localtime()
+        self.__Save_Acquisition()
+        self.gui.StartStopAcqButton.setText('Start')
+        for el in self.hide: el.setEnabled(True)
+        self.__Acquisition()
+      else: self.__Acquisition() # if acquisition is finished, stop it
+    
     if R['real_t']>0:
       if   self.AcqPar['StopCriteria'] == 0: self.Progress = 0
       elif self.AcqPar['StopCriteria'] == 1: self.Progress = 100 * (R['real_t'] - R['dead_t']) // self.AcqPar['StopValue'][1]
@@ -137,30 +153,18 @@ class TAB_SP:
       self.gui.ProgressBar.setValue(self.Progress)
       self.gui.DeadTimeBar.setValue(100*R['dead_t'] // R['real_t'])
     
-    if not R['acqStatus']:  # not aquiring now  
-      if self.start:
-        self.DPP.StartAcquisition( self.DPP.CH)
-        self.start = False
-      elif self.gui.AutoRestartCheckBox.isChecked():
-        print ('auto mode')
-        self.Time_Stop = time.localtime()
-        self.__Save_Acquisition()
-        self.__Clear_Histogram()
-        self.start = True
-      else: self.__Acquisition() 
-    
-    self.LiveTimes[1] = R['real_t'] -  R['dead_t']
-    dT = self.LiveTimes[1] - self.LiveTimes[0]
-    self.LiveTimes[0] = self.LiveTimes[1]
+    self.LiveTimes[1] = R['real_t'] - R['dead_t'];  dT = self.LiveTimes[1] - self.LiveTimes[0]; self.LiveTimes[0] = self.LiveTimes[1]
     if dT>0.0:
       for r in [0,1,2]:
         self.Integrals[1][r] = sum(self.Histogram[self.AcqPar['ThresholdABC'][r]: self.AcqPar['ThresholdABC'][r+1]])
         rate = int(float(self.Integrals[1][r] - self.Integrals[0][r])/dT)
         if rate >= 0:
+          tmp = self.ScaleList[r][0]
           self.ScaleList[r].pop(0)
           self.ScaleList[r].append(rate)
+          if self.ScalesMax[r] == tmp: self.ScalesMax[r] = max(                   self.ScaleList[r]    )
+          else:                        self.ScalesMax[r] = max(self.ScalesMax[r], self.ScaleList[r][-1])
         self.Integrals[0][r] = self.Integrals[1][r]
-#    print(self.ScaleList[0][-1], self.ScaleList[1][-1], self.ScaleList[2][-1])
     if 'spectrum' in self.Visualize:  self.gui.AcqWidget.Show_Spectrum()
     else:                             self.gui.AcqWidget.Show_Counting()
     self.last_response = R
@@ -169,7 +173,8 @@ class TAB_SP:
     if self.gui.SpectrumRadioButton.isChecked():
       self.__Clear_Histogram()
     else:
-      self.ScaleList    = [[0   for i in range(self.ScaleSize)] for j in range(3)]
+      self.ScaleList = [[0   for i in range(self.ScaleSize)] for j in range(3)]
+      self.ScalesMax = [0, 0, 0]
       self.gui.AcqWidget.Show_Counting()
   
   def __Clear_Histogram(self):
