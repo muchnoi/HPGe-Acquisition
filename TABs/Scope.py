@@ -60,12 +60,14 @@ class OscCanvas(FigureCanvas):
       if not self.__single:
         self.gui.TriggerButton.setText('Stop')
         self.gui.timerB.start(250)
-        self.gui.timerB.timeout.connect(self.Measure)
+        self.gui.timerB.timeout.connect(self.Measure)      
+        for i in [0,1,3]: self.gui.Tabs.setTabEnabled(i, False)
     elif 'Stop' in button: 
       self.gui.timerB.timeout.disconnect(self.Measure)
       self.gui.timerB.stop()
       self.DPP.StopAcquisition(   self.DPP.CH)
       self.gui.TriggerButton.setText('Start')
+      for i in [0,1,3]: self.gui.Tabs.setTabEnabled(i, True)
     
   def Measure(self):
     if self.gui.tab_OS.isHidden(): self.ButtonPressed()

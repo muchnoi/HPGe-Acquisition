@@ -2,7 +2,7 @@ from ctypes import c_int32
 import pickle, time, gzip, os, configparser
 
 class TAB_SP:
-  initiated    = False
+  __initiated  = False
   HistoSize    = 16384
   PageStep     = HistoSize-1
   HistoType    = c_int32*HistoSize # length of a histogram
@@ -12,9 +12,10 @@ class TAB_SP:
   LiveTimes    = [0.0, 0.0]
   ScaleSize    = 512
   configure    = configparser.ConfigParser()
+  keV          = 1.0
 
   def __init__(self):
-    if not self.initiated:
+    if not self.__initiated:
       self.configure.read('environment.cfg')
       self.data_folder = self.configure.get('Paths','data_folder')
       self.Progress  = 0  
@@ -37,21 +38,26 @@ class TAB_SP:
       self.gui.UpdateTimeSpinBox.valueChanged.connect(self.__Update_Time)
       self.gui.StopCriteriaComboBox.currentIndexChanged.connect(self.__Stop_Criteria)
       self.gui.SpectrumRadioButton.toggled.connect(self.__Set_View)
+
+      self.gui.GainCheckBox.toggled.connect(self.__Set_keV)
+      self.gui.GainSpinBox.valueChanged.connect(self.__Set_keV)
+
       self.hide = [self.gui.StopCriteriaComboBox, self.gui.AcqNumberSpinBox,  self.gui.UpdateTimeSpinBox,
                    self.gui.ThresholdASpinBox,    self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox, 
-                   self.gui.SaveAcqButton]
-      self.initiated = True
+                   self.gui.SaveAcqButton, self.gui.GainCheckBox, self.gui.GainSpinBox]
+      self.__initiated = True
       self.last_response = self.prev_response = None
     self.Read_Scope_Parameters()
-    self.Read_Acquisition_Parameters()
     self.DPP.acqMode = 1 # Waveform = 0, Histogram = 1
+    self.Read_Acquisition_Parameters()
 
   def Init_Acquisition_Parameters(self):
     self.AcqPar = {'StopCriteria':1, 
-                   'StopValue': [1, 10, 100, 1000],
+                   'StopValue': [1, 60, 60, 10000],
                    'StopSuffix':[' mouse click', ' seconds', ' seconds', ' counts'], 
                    'UpdateTime':1.0, 
-                   'ThresholdABC':[100, 1000, 10000, self.HistoSize]}
+                   'ThresholdABC':[100, 1000, 10000, self.HistoSize],
+                   'Gain': 1.0}
 
   def Save_Acquisition_Parameters(self):
     with open('acquisition.pickle', 'wb') as fp: pickle.dump(self.AcqPar, fp)
@@ -65,17 +71,23 @@ class TAB_SP:
     self.__SetInitialField(self.gui.ZoomComboBox, 0)
     self.gui.ProgressBar.setValue(0)
     self.gui.DeadTimeBar.setValue(0)
-    self.__SetValue(self.gui.AcqNumberSpinBox, self.AcqPar['StopValue'][i], self.AcqPar['StopSuffix'][i], bool(i))
-    self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0], ' ', True)
-    self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ', True)
-    self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2], ' ', True)
+
+    C = self.DPP.GetHVChannelConfiguration(self.DPP.CH)
+    self.gui.UBar.setRange(0, int(C['VMax']));  self.gui.UBar.setFormat("%v V")
+    self.gui.IBar.setRange(0, int(C['ISet']));  self.gui.IBar.setFormat("%v μA")
+
+    self.__SetValue(self.gui.AcqNumberSpinBox,  self.AcqPar['StopValue'][i], self.AcqPar['StopSuffix'][i], bool(i))
     self.__SetValue(self.gui.UpdateTimeSpinBox, self.AcqPar['UpdateTime'],     ' s', True)
+    self.__SetValue(self.gui.GainSpinBox,       self.AcqPar['Gain'],      ' keV/ch', True)
     self.gui.SpectrumRadioButton.setChecked(True)
     self.gui.ACheckBox.setChecked(True)
     self.gui.BCheckBox.setChecked(True)
     self.gui.CCheckBox.setChecked(True)
+    self.gui.GainCheckBox.setChecked(False)
     self.Visualize = 'spectrum'
+    self.__Set_keV()
     self.gui.AcqWidget.Prepare(self)
+    self.gui.AcqWidget.Show_Spectrum()
   
   def __SetValue(self, SB, V, S, E):
     SB.blockSignals(True); SB.setValue(V); SB.setSuffix(S); SB.setEnabled(E); SB.blockSignals(False)  
@@ -83,6 +95,21 @@ class TAB_SP:
   def __SetInitialField(self, A, B): 
     for index in range(A.count()):
       if A.itemData(index) == B: A.setCurrentIndex(index); break
+
+  def __Set_keV(self):
+    self.AcqPar['Gain'] = self.gui.GainSpinBox.value()
+    if self.gui.GainCheckBox.isChecked(): self.keV = self.AcqPar['Gain']
+    else:                                 self.keV = 1.0
+    self.gui.AcqWidget.Show_Spectrum()
+    if self.keV == 1.0:
+      self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0], ' ch',  True)
+      self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ch',  True)
+      self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2], ' ch',  True)
+    else:
+      self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0]*self.keV, ' keV', True)
+      self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1]*self.keV, ' keV', True)
+      self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2]*self.keV, ' keV', True)
+      
 
   def __Set_View(self, index):
     if index: 
@@ -119,12 +146,17 @@ class TAB_SP:
       tt = int(1000*self.AcqPar['UpdateTime']) # seconds -> milliseconds
       self.Time_Start = time.localtime()
       self.gui.timerB.start(tt); self.gui.timerB.timeout.connect(self.__Acquire)
+      for i in [0,1,2]: self.gui.Tabs.setTabEnabled(i, False)
     elif 'Stop' in button: 
-      self.gui.timerB.timeout.disconnect(self.__Acquire); self.gui.timerB.stop()
-      self.DPP.StopAcquisition(   self.DPP.CH)
-      self.Time_Stop = time.localtime()
-      self.gui.StartStopAcqButton.setText('Start')
+      self.__Stop_Action()
       for el in self.hide: el.setEnabled(True)
+      for i in [0,1,2]: self.gui.Tabs.setTabEnabled(i, True)
+
+  def __Stop_Action(self):
+    self.gui.timerB.timeout.disconnect(self.__Acquire); self.gui.timerB.stop()
+    self.DPP.StopAcquisition(   self.DPP.CH)
+    self.Time_Stop = time.localtime()
+    self.gui.StartStopAcqButton.setText('Start')
 
   def __Acquire(self):
     if self.gui.tab_SP.isHidden(): self.__Acquisition()
@@ -136,14 +168,13 @@ class TAB_SP:
         self.start = False
       elif self.gui.AutoRestartCheckBox.isChecked(): # if acquisition is finished, start new one
         print('auto mode')
-        self.gui.timerB.timeout.disconnect(self.__Acquire); self.gui.timerB.stop()
-        self.DPP.StopAcquisition(   self.DPP.CH)
-        self.Time_Stop = time.localtime()
+        self.__Stop_Action()
         self.__Save_Acquisition()
-        self.gui.StartStopAcqButton.setText('Start')
-        for el in self.hide: el.setEnabled(True)
         self.__Acquisition()
       else: self.__Acquisition() # if acquisition is finished, stop it
+    
+    V, I = self.DPP.ReadHVChannelMonitoring(self.DPP.CH)
+    self.gui.UBar.setValue(V); self.gui.IBar.setValue(I)
     
     if R['real_t']>0:
       if   self.AcqPar['StopCriteria'] == 0: self.Progress = 0
@@ -248,27 +279,14 @@ class TAB_SP:
      self.AcqPar['UpdateTime'] = self.gui.UpdateTimeSpinBox.value()
     
   def __Ranges(self):
-    self.AcqPar['ThresholdABC'][0] = self.gui.ThresholdASpinBox.value()
-    self.AcqPar['ThresholdABC'][1] = self.gui.ThresholdBSpinBox.value()
-    self.AcqPar['ThresholdABC'][2] = self.gui.ThresholdCSpinBox.value()
-    self.gui.ThresholdASpinBox.setMinimum(0);                                self.gui.ThresholdASpinBox.setMaximum(self.AcqPar['ThresholdABC'][1]-1)
-    self.gui.ThresholdBSpinBox.setMinimum(self.AcqPar['ThresholdABC'][0]+1); self.gui.ThresholdBSpinBox.setMaximum(self.AcqPar['ThresholdABC'][2]-1)
-    self.gui.ThresholdCSpinBox.setMinimum(self.AcqPar['ThresholdABC'][1]+1); self.gui.ThresholdCSpinBox.setMaximum(self.AcqPar['ThresholdABC'][3]-1)
+    self.AcqPar['ThresholdABC'][0] = int(self.gui.ThresholdASpinBox.value()/self.keV)
+    self.AcqPar['ThresholdABC'][1] = int(self.gui.ThresholdBSpinBox.value()/self.keV)
+    self.AcqPar['ThresholdABC'][2] = int(self.gui.ThresholdCSpinBox.value()/self.keV)
+#    self.gui.ThresholdASpinBox.setMinimum(0)                                
+#    self.gui.ThresholdASpinBox.setMaximum( int((self.AcqPar['ThresholdABC'][1]-1)*self.keV) )
+#    self.gui.ThresholdBSpinBox.setMinimum(int((self.AcqPar['ThresholdABC'][0]+1)*self.keV))
+#    self.gui.ThresholdBSpinBox.setMaximum(int((self.AcqPar['ThresholdABC'][2]-1)*self.keV))
+#    self.gui.ThresholdCSpinBox.setMinimum(int((self.AcqPar['ThresholdABC'][1]+1)*self.keV))
+#    self.gui.ThresholdCSpinBox.setMaximum(int((self.AcqPar['ThresholdABC'][3]-1)*self.keV))
 
-#    print('N=', self.DPP.GetTotalNumberOfHistograms(self.DPP.CH))
-#    print('I=', self.DPP.GetCurrentHistogramIndex(self.DPP.CH))
-#    print('S=', self.DPP.GetHistogramSize(self.DPP.CH, 0))
-    """
-    print(self.DPP.GetStopCriteria(self.DPP.CH))
-    status = self.DPP.IsChannelAcquiring(self.DPP.CH)
-    if status is 0: 
-      self.DPP.StartAcquisition(self.DPP.CH)
-      for i in range(10):
-        R = self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
-        print(R)
-        sleep(1)
-    self.DPP.StopAcquisition(self.DPP.CH)
-    R = self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
-    print(R)
-    """
 

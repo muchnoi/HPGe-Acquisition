@@ -9,9 +9,10 @@ class TABs(CF, HV, OS, SP):
   def __init__(self, gui):
     self.gui = gui
     self.DPP = DPPLib.CAEN_DPP()
-    CF.__init__(self)
     self.gui.Tabs.setCurrentWidget(self.gui.tab_CF)
-
+    CF.__init__(self)
+    for i in [1,2,3]: self.gui.Tabs.setTabEnabled(i, False)
+    self.gui.Tabs.currentChanged.connect(self.Tab_Changed)
     self.gui.menuWaveform_Settings.setDisabled(True)
     self.gui.Save_WF_Settings.triggered.connect(self.DPP.Save_DGTZ_Parameters)
     self.gui.Back_to_Saved_WF_Settings.triggered.connect(self.Read_Scope_Parameters)
@@ -21,36 +22,13 @@ class TABs(CF, HV, OS, SP):
     self.gui.Save_ACQ_Settings.triggered.connect(self.Save_Acquisition_Parameters)
     self.gui.Back_to_Saved_ACQ_Settings.triggered.connect(self.Read_Acquisition_Parameters)
     self.gui.Back_to_Default_ACQ_Settings.triggered.connect(self.Init_Acquisition_Parameters)
+   
 
-    self.gui.Tabs.currentChanged.connect(self.Select_Tab)
-    self.gui.timerA.start(1000)
-    self.gui.timerA.timeout.connect(self.Update_Tabs)
-    self.already_connected = False   
-
-  def Select_Tab(self):
-    if not self.gui.tab_OS.isVisible(): self.gui.menuWaveform_Settings.setDisabled(True)
-    else:            OS.__init__(self); self.gui.menuWaveform_Settings.setDisabled(False)
-      
-    if self.gui.tab_HV.isVisible(): HV.__init__(self)
-    
-    if not self.gui.tab_SP.isVisible(): self.gui.menuAcquisition_Settings.setDisabled(True)
-    else:            SP.__init__(self); self.gui.menuAcquisition_Settings.setDisabled(False)
-    
-  def Update_Tabs(self):
-    if self.gui.Connect.isChecked(): #self.DPP.Connection:
-      if self.DPP.CheckBoardCommunication(): 
-        if not self.already_connected:
-          self.already_connected = True
-        self.TABs123(True)
-      else: 
-        self.Disconnect()
-        self.already_connected = False
-    else: self.TABs123(False)
-        
-  def TABs123(self, v):     
-    for i in [1,2,3]: self.gui.Tabs.setTabEnabled(i, v)
-
-  def __del__(self):
-    if self.DPP.Connection:  print("Close connection: ", self.DPP.EndLibrary())
+  def Tab_Changed(self,index):
+    if   index==1: HV.__init__(self);  self.gui.timerA.start(1000)
+    elif index==2: OS.__init__(self);  self.gui.timerA.stop()
+    elif index==3: SP.__init__(self);  self.gui.timerA.stop()
+    self.gui.menuWaveform_Settings.setDisabled(   index!=2)
+    self.gui.menuAcquisition_Settings.setDisabled(index!=3)
 
 

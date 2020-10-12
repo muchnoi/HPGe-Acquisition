@@ -4,7 +4,6 @@ class TAB_CF:
       self.gui.LinkType.addItem(k,v)
     self.gui.Disconn.setChecked(True)
     self.DPP.Connection = False
-    self.Update_Tabs()
     self.gui.Connect.toggled.connect(self.Connections)
     self.gui.Select_CH0.toggled.connect(self.Channel_Select)
     self.gui.Select_CH0.setEnabled(False)
@@ -30,6 +29,7 @@ class TAB_CF:
           self.gui.Select_CH0.setEnabled(True)
           self.gui.Select_CH1.setEnabled(True)
           self.gui.Select_CH0.setChecked(True)
+          for i in [1,2,3]: self.gui.Tabs.setTabEnabled(i, True)
       else:
         self.gui.Disconn.setChecked(True)
     elif self.gui.Disconn.isChecked():
@@ -39,9 +39,10 @@ class TAB_CF:
     self.gui.AMCFirmware.setText( T[2])
     self.gui.ROCFirmware.setText( T[3])
     self.gui.License.setText(     T[4])
-    self.Update_Tabs()
+#    self.Update_Tabs()
 
   def Disconnect(self):
+    for i in [1,2,3]: self.gui.Tabs.setTabEnabled(i, False)
     self.DPP.EndLibrary()
     self.DPP.Connection = False
     self.gui.Connect.setText("Connect")

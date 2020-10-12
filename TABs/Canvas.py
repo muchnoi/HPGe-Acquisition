@@ -2,13 +2,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from matplotlib import style
-from ctypes import c_int64
+from ctypes import c_int64, c_float
 
 class AcqCanvas(FigureCanvas):
   DataSize = 512
-  DataType = c_int64*DataSize
-  __X = DataType()
-  __Y = DataType()
+  XDataType = c_float*DataSize
+  YDataType = c_int64*DataSize
+  __X = XDataType()
+  __Y = YDataType()
   __Z = None
   __colors  = ['#101010', '#FF0000', '#00FF00', '#FFFF00']
   
@@ -29,7 +30,6 @@ class AcqCanvas(FigureCanvas):
     self.plt.cla()
     if self.__Z is None: self.__Z = [None for el in range(ext.ScaleSize)]
     if 'spectrum' in ext.Visualize:
-      self.plt.set_xlabel('channels', horizontalalignment='right', position=(1,25))
       self.plt.set_ylabel('counts')
       self.plt.patch.set_facecolor('#E0E0FF')
       self.plt.patch.set_alpha(0.75)
@@ -44,9 +44,10 @@ class AcqCanvas(FigureCanvas):
       self.plt.grid(ls = ':', c = '#F0F0A0')
       self._pS = None
       
-#    ext.gui.addToolBar(0x4, NavigationToolbar(self, ext.gui))   
   
   def Show_Spectrum(self):
+    if self.ext.keV == 1.0: self.plt.set_xlabel('channels',     horizontalalignment='right', position=(1, 25))
+    else:                   self.plt.set_xlabel('energy [keV]', horizontalalignment='right', position=(1, 25))
     cmin = self.ext.gui.HistogramScrollBar.value()
     cmax = self.ext.gui.HistogramScrollBar.value() + self.ext.PageStep
     step = (self.ext.PageStep+1)/self.DataSize
@@ -55,13 +56,13 @@ class AcqCanvas(FigureCanvas):
       j = int(i + step)
       if i==j: self.__Y[x] = self.ext.Histogram[i]
       else:    self.__Y[x] = sum(self.ext.Histogram[i:j])
-      self.__X[x] = (i+j)//2
+      self.__X[x] = 0.5*(i+j)*self.ext.keV #      self.__X[x] = (i+j)//2
     if self._pH is None:
       self._pH  = self.plt.step(self.__X, self.__Y, linewidth = 1, color = self.__colors[0])[0]
     else:
       self._pH.set_xdata(self.__X)
       self._pH.set_ydata(self.__Y)
-      self.plt.set_xlim(left = cmin,                       right  = cmax + step)
+      self.plt.set_xlim(left = cmin*self.ext.keV, right  = (cmax + step)*self.ext.keV)
       if self.ext.gui.LogScaleCheckBox.isChecked():
         self.plt.set_yscale('log')
         self.plt.set_ylim(top  = int(1.1*max(self.__Y) + 1), bottom = 0.1)

@@ -1,8 +1,8 @@
 class TAB_OS:
-  not_initiated = True
+  __initiated = False
 
   def __init__(self):
-    if self.not_initiated:
+    if not self.__initiated:
       for k,v in self.DPP.GetInfoDict("InputRangeNum", "InputRanges").items(): 
         self.gui.InputRange.addItem('ADC range: {} V'.format(k), userData = v)
       for k,v in self.DPP.GetInfoDict("NumVirtualProbes1", "SupportedVirtualProbes1").items(): 
@@ -52,7 +52,7 @@ class TAB_OS:
       self.gui.ShiftB.valueChanged.connect(self.gui.QScope.Legend)
       self.gui.ScaleT.valueChanged.connect(self.gui.QScope.Legend)
       self.gui.ShiftT.valueChanged.connect(self.gui.QScope.Legend)
-      self.not_initiated = False
+      self.__initiated = True
 
     self.DPP.acqMode = 0 # Waveform = 0, Histogram = 1
     self.Read_Scope_Parameters()
