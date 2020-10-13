@@ -6,14 +6,14 @@ class DGTZ:
 
   def Read_DGTZ_Parameters(self):
     try:     
-      with open('dgtz.pickle', 'rb') as fp: 
+      with open('digitizer.pickle', 'rb') as fp: 
         self.inputRange, self.boardConfig = pickle.load(fp)
     except FileNotFoundError:        
       self.Init_DGTZ_Parameters()
 
   def Save_DGTZ_Parameters(self):
     self.GetBoardConfiguration()
-    with open('dgtz.pickle', 'wb') as fp: 
+    with open('digitizer.pickle', 'wb') as fp: 
       pickle.dump([self.inputRange, self.boardConfig], fp)
 
   def Init_DGTZ_Parameters(self):

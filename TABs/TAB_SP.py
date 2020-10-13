@@ -16,6 +16,7 @@ class TAB_SP:
 
   def __init__(self):
     if not self.__initiated:
+      self.ranges = [self.gui.ThresholdASpinBox, self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox]
       self.configure.read('environment.cfg')
       self.data_folder = self.configure.get('Paths','data_folder')
       self.Progress  = 0  
@@ -32,9 +33,9 @@ class TAB_SP:
       self.gui.ClearAcqButton.clicked.connect(self.__Clear_Acquisition)
       self.gui.SaveAcqButton.clicked.connect( self.__Save_Acquisition)
       self.gui.AcqNumberSpinBox.valueChanged.connect( self.__Stop_Value)
-      self.gui.ThresholdASpinBox.valueChanged.connect(self.__Ranges)
-      self.gui.ThresholdBSpinBox.valueChanged.connect(self.__Ranges)
-      self.gui.ThresholdCSpinBox.valueChanged.connect(self.__Ranges)
+      self.gui.ThresholdASpinBox.valueChanged.connect(self.__RangeA)
+      self.gui.ThresholdBSpinBox.valueChanged.connect(self.__RangeB)
+      self.gui.ThresholdCSpinBox.valueChanged.connect(self.__RangeC)
       self.gui.UpdateTimeSpinBox.valueChanged.connect(self.__Update_Time)
       self.gui.StopCriteriaComboBox.currentIndexChanged.connect(self.__Stop_Criteria)
       self.gui.SpectrumRadioButton.toggled.connect(self.__Set_View)
@@ -42,9 +43,8 @@ class TAB_SP:
       self.gui.GainCheckBox.toggled.connect(self.__Set_keV)
       self.gui.GainSpinBox.valueChanged.connect(self.__Set_keV)
 
-      self.hide = [self.gui.StopCriteriaComboBox, self.gui.AcqNumberSpinBox,  self.gui.UpdateTimeSpinBox,
-                   self.gui.ThresholdASpinBox,    self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox, 
-                   self.gui.SaveAcqButton, self.gui.GainCheckBox, self.gui.GainSpinBox]
+      self.hide = self.ranges + [self.gui.StopCriteriaComboBox, self.gui.AcqNumberSpinBox,  self.gui.UpdateTimeSpinBox,
+                  self.gui.SaveAcqButton, self.gui.GainCheckBox, self.gui.GainSpinBox]
       self.__initiated = True
       self.last_response = self.prev_response = None
     self.Read_Scope_Parameters()
@@ -101,14 +101,9 @@ class TAB_SP:
     if self.gui.GainCheckBox.isChecked(): self.keV = self.AcqPar['Gain']
     else:                                 self.keV = 1.0
     self.gui.AcqWidget.Show_Spectrum()
-    if self.keV == 1.0:
-      self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0], ' ch',  True)
-      self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1], ' ch',  True)
-      self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2], ' ch',  True)
-    else:
-      self.__SetValue(self.gui.ThresholdASpinBox, self.AcqPar['ThresholdABC'][0]*self.keV, ' keV', True)
-      self.__SetValue(self.gui.ThresholdBSpinBox, self.AcqPar['ThresholdABC'][1]*self.keV, ' keV', True)
-      self.__SetValue(self.gui.ThresholdCSpinBox, self.AcqPar['ThresholdABC'][2]*self.keV, ' keV', True)
+    for i in [0,1,2]:
+      if self.keV == 1.0: self.__SetValue(self.ranges[i], self.AcqPar['ThresholdABC'][i], ' ch ', True)
+      else:    self.__SetValue(self.ranges[i], self.keV * self.AcqPar['ThresholdABC'][i], ' keV', True)
       
 
   def __Set_View(self, index):
@@ -167,7 +162,6 @@ class TAB_SP:
         self.DPP.StartAcquisition( self.DPP.CH)
         self.start = False
       elif self.gui.AutoRestartCheckBox.isChecked(): # if acquisition is finished, start new one
-        print('auto mode')
         self.__Stop_Action()
         self.__Save_Acquisition()
         self.__Acquisition()
@@ -237,6 +231,7 @@ class TAB_SP:
       f.write(b'# Tlive       %.2f\n' % (self.last_response['real_t'] - self.last_response['dead_t']))
       f.write(b'# ModelMCA    %s\n'   % self.DPP.boardInfo.ModelName)
       f.write(b'# SerialNumer %d\n'   % self.DPP.boardInfo.SerialNumber)
+      f.write(b'# ChannelMCA  %d\n'   % self.DPP.CH)
       f.write(b'# HV          %d\n'   % self.DPP.ReadHVChannelMonitoring(self.DPP.CH)[0])
       f.write(b'# LLD         %d\n'   % self.DPP.boardConfig.DPPParams.thr[self.DPP.CH])
       f.write(b'# RangeADC    %d\n'   % self.DPP.inputRange[self.DPP.CH])
@@ -251,10 +246,10 @@ class TAB_SP:
       for c in range(self.HistoSize):  f.write(b'%d\n' % self.Histogram[c])
 
 #      print (self.DPP.GetInfoDict("InputRangeNum", "InputRanges"))
-    self.gui.statusBar().showMessage('New file %s was saved on %s' % (filename, time.asctime()))
+    message = 'New file %s was saved on %s' % (filename, time.asctime())
+    print(message)
+    self.gui.statusBar().showMessage(message)
     self.prev_response = self.last_response
-#    print(time.asctime(self.Time_Start), time.mktime(self.Time_Start))
-#    print(time.asctime(self.Time_Stop ), time.mktime(self.Time_Stop ))
 
   def __Stop_Criteria(self, index):
     c = self.gui.StopCriteriaComboBox.itemData(index)
@@ -278,15 +273,16 @@ class TAB_SP:
   def __Update_Time(self):
      self.AcqPar['UpdateTime'] = self.gui.UpdateTimeSpinBox.value()
     
-  def __Ranges(self):
+  def __RangeA(self):
+    self.gui.ThresholdASpinBox.setRange(0, self.gui.ThresholdBSpinBox.value())
     self.AcqPar['ThresholdABC'][0] = int(self.gui.ThresholdASpinBox.value()/self.keV)
+
+  def __RangeB(self):
+    self.gui.ThresholdBSpinBox.setRange(self.gui.ThresholdASpinBox.value(), self.gui.ThresholdCSpinBox.value())
     self.AcqPar['ThresholdABC'][1] = int(self.gui.ThresholdBSpinBox.value()/self.keV)
+
+  def __RangeC(self):
+    self.gui.ThresholdCSpinBox.setRange(self.gui.ThresholdBSpinBox.value(), self.HistoSize*self.keV)
     self.AcqPar['ThresholdABC'][2] = int(self.gui.ThresholdCSpinBox.value()/self.keV)
-#    self.gui.ThresholdASpinBox.setMinimum(0)                                
-#    self.gui.ThresholdASpinBox.setMaximum( int((self.AcqPar['ThresholdABC'][1]-1)*self.keV) )
-#    self.gui.ThresholdBSpinBox.setMinimum(int((self.AcqPar['ThresholdABC'][0]+1)*self.keV))
-#    self.gui.ThresholdBSpinBox.setMaximum(int((self.AcqPar['ThresholdABC'][2]-1)*self.keV))
-#    self.gui.ThresholdCSpinBox.setMinimum(int((self.AcqPar['ThresholdABC'][1]+1)*self.keV))
-#    self.gui.ThresholdCSpinBox.setMaximum(int((self.AcqPar['ThresholdABC'][3]-1)*self.keV))
 
 
