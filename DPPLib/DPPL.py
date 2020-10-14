@@ -49,8 +49,10 @@ class CAEN_DPP(HVPS, DGTZ):
   def GetInfoDict(self, attr_number, attr_list):
     R = {}    
     for r in range(getattr(self.boardInfo, attr_number)):
-      num = getattr(self.boardInfo, attr_list)[r]
-      name = DPP_Probes[attr_list][r]; R[name] = num
+      num     = getattr(self.boardInfo, attr_list)[r]
+      name    = DPP_Probes[attr_list][num]
+      R[name] = num
+#      print(r, num, name)
     return R
       
   def GetBoardConfiguration(self):
