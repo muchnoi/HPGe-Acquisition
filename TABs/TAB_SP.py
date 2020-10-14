@@ -19,6 +19,8 @@ class TAB_SP:
       self.ranges = [self.gui.ThresholdASpinBox, self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox]
       self.configure.read('environment.cfg')
       self.data_folder = self.configure.get('Paths','data_folder')
+      if self.configure.has_option('Paths', 'pulser_file'):      self.pulser_file = self.configure.get('Paths','pulser_file')
+      else: print('Warning: no pulser_file in environment.cfg'); self.pulser_file = None
       self.Progress  = 0  
       self.ScaleList = [[0 for i in range(self.ScaleSize)] for j in range(3)]
       self.ScalesMax = [0, 0, 0]
@@ -218,10 +220,18 @@ class TAB_SP:
       return
 
     self.gui.statusBar().showMessage('Saving new file...')
-    folder = '%s/%4d/%04d%02d%02d' % (self.data_folder, self.Time_Stop.tm_year, self.Time_Stop.tm_year, self.Time_Start.tm_mon, self.Time_Start.tm_mday)
+    folder = '%s/%4d/%04d%02d%02d' % (self.data_folder, self.Time_Stop.tm_year, self.Time_Stop.tm_year, self.Time_Stop.tm_mon, self.Time_Stop.tm_mday)
     if not os.path.exists(folder): os.makedirs(folder)
     filename = folder + '/%02d%02d%02d.wall.gz' % (self.Time_Stop.tm_hour, self.Time_Stop.tm_min, self.Time_Stop.tm_sec)
-    
+    if self.pulser_file:
+      try:
+        with open(self.pulser_file, 'rb') as f: pulser = f.readline()
+        if len(pulser)<5: pulser = None
+      except FileNotFoundError:
+        print('pulser file do not exist')
+        pulser = None
+    else:
+      pulser = None
     with gzip.open(filename, 'wb') as f:
       f.write(b'# Date        %4d%02d%02d\n' %  (self.Time_Start.tm_year, self.Time_Start.tm_mon, self.Time_Start.tm_mday))
       f.write(b'# eDate       %4d%02d%02d\n' %  (self.Time_Stop.tm_year,  self.Time_Stop.tm_mon,  self.Time_Stop.tm_mday))
@@ -243,6 +253,7 @@ class TAB_SP:
       f.write(b'# PeakDelay   %d\n'   % self.DPP.boardConfig.DPPParams.ftd[ self.DPP.CH])
       f.write(b'# PeakHoldoff %d\n'   % self.DPP.boardConfig.DPPParams.pkho[self.DPP.CH])
       f.write(b'# BaseHoldoff %d\n'   % self.DPP.boardConfig.DPPParams.blho[self.DPP.CH])
+      if pulser: f.write(pulser)
       for c in range(self.HistoSize):  f.write(b'%d\n' % self.Histogram[c])
 
 #      print (self.DPP.GetInfoDict("InputRangeNum", "InputRanges"))
