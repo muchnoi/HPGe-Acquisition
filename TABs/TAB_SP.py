@@ -106,7 +106,6 @@ class TAB_SP:
     for i in [0,1,2]:
       if self.keV == 1.0: self.__SetValue(self.ranges[i], self.AcqPar['ThresholdABC'][i], ' ch ', True)
       else:    self.__SetValue(self.ranges[i], self.keV * self.AcqPar['ThresholdABC'][i], ' keV', True)
-      
 
   def __Set_View(self, index):
     if index: 
@@ -166,6 +165,7 @@ class TAB_SP:
       elif self.gui.AutoRestartCheckBox.isChecked(): # if acquisition is finished, start new one
         self.__Stop_Action()
         self.__Save_Acquisition()
+        self.__Clear_Histogram()
         self.__Acquisition()
       else: self.__Acquisition() # if acquisition is finished, stop it
     
@@ -199,6 +199,8 @@ class TAB_SP:
   def __Clear_Acquisition(self):      
     if self.gui.SpectrumRadioButton.isChecked():
       self.__Clear_Histogram()
+      self.gui.AcqWidget.Prepare(self)
+      self.gui.AcqWidget.Show_Spectrum()
     else:
       self.ScaleList = [[0   for i in range(self.ScaleSize)] for j in range(3)]
       self.ScalesMax = [0, 0, 0]
@@ -206,13 +208,10 @@ class TAB_SP:
   
   def __Clear_Histogram(self):
     self.Progress = 0
-    self.Time_Start = time.localtime()
     self.gui.ProgressBar.setValue(0)
     self.gui.DeadTimeBar.setValue(0)
     self.DPP.ClearCurrentHistogram(self.DPP.CH)
     self.DPP.GetCurrentHistogram(self.DPP.CH, self.Histogram)
-    self.gui.AcqWidget.Prepare(self)
-    self.gui.AcqWidget.Show_Spectrum()
 
   def __Save_Acquisition(self):
     if self.last_response == self.prev_response:
