@@ -33,7 +33,7 @@ class TAB_CF:
             for c in range(self.DPP.boardInfo.Channels):   self.gui.InputComboBox.addItem('Input channel: %d' % c, c)
             self.gui.Tabs.setTabEnabled(2, True)
             self.gui.Tabs.setTabEnabled(3, True)
-          if self.DPP.boardInfo.HVChannels>2:
+          if self.DPP.boardInfo.HVChannels>0:
             for c in range(self.DPP.boardInfo.HVChannels): self.gui.HVComboBox.addItem('HV channel: %d' % c, c)
             self.gui.Tabs.setTabEnabled(1, True)
       else:
