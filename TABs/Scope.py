@@ -67,8 +67,9 @@ class OscCanvas(FigureCanvas):
       self.gui.timerB.stop()
       self.DPP.StopAcquisition(   self.DPP.CH)
       self.gui.TriggerButton.setText('Start')
-      for i in [0,1,3]: self.gui.Tabs.setTabEnabled(i, True)
-    
+      for i in [0,3]:         self.gui.Tabs.setTabEnabled(i, True)
+      if self.DPP.HVCH!=None: self.gui.Tabs.setTabEnabled(1, True)
+
   def Measure(self):
     if self.gui.tab_OS.isHidden(): self.ButtonPressed()
     else:

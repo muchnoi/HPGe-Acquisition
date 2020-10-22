@@ -42,7 +42,7 @@
      <pointsize>12</pointsize>
     </font>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_23">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <widget class="QTabWidget" name="Tabs">
       <property name="sizePolicy">
@@ -67,7 +67,7 @@ QDoubleSpinBox {background-color: #FFFFFF;}
 </string>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_CF">
        <property name="font">
@@ -82,30 +82,26 @@ QDoubleSpinBox {background-color: #FFFFFF;}
         <item row="2" column="2">
          <widget class="QGroupBox" name="groupBox_18">
           <property name="title">
-           <string>Channel select</string>
+           <string>Channel Select</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item alignment="Qt::AlignHCenter">
-            <widget class="QRadioButton" name="Select_CH0">
-             <property name="font">
-              <font>
-               <pointsize>20</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>CHANNEL 0</string>
+           <item>
+            <widget class="QComboBox" name="InputComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
             </widget>
            </item>
-           <item alignment="Qt::AlignHCenter">
-            <widget class="QRadioButton" name="Select_CH1">
-             <property name="font">
-              <font>
-               <pointsize>20</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>CHANNEL 1</string>
+           <item>
+            <widget class="QComboBox" name="HVComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
             </widget>
            </item>
@@ -115,16 +111,44 @@ QDoubleSpinBox {background-color: #FFFFFF;}
         <item row="3" column="0">
          <widget class="QGroupBox" name="groupBox_15">
           <property name="title">
-           <string>AMC Firmware</string>
+           <string>Firmware</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_12">
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <item alignment="Qt::AlignHCenter">
+            <widget class="QLabel" name="ROCFirmware">
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>----</string>
+             </property>
+            </widget>
+           </item>
            <item alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="AMCFirmware">
              <property name="font">
               <font>
-               <pointsize>20</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
+               <pointsize>14</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>----</string>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignHCenter">
+            <widget class="QLabel" name="License">
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="text">
@@ -154,24 +178,9 @@ QDoubleSpinBox {background-color: #FFFFFF;}
         <item row="3" column="1">
          <widget class="QGroupBox" name="groupBox_16">
           <property name="title">
-           <string>ROC Firmware</string>
+           <string>Empty Box I</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_13">
-           <item alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="ROCFirmware">
-             <property name="font">
-              <font>
-               <pointsize>20</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>----</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QVBoxLayout" name="verticalLayout_13"/>
          </widget>
         </item>
         <item row="0" column="1">
@@ -215,17 +224,39 @@ QDoubleSpinBox {background-color: #FFFFFF;}
         </item>
         <item row="2" column="1">
          <widget class="QGroupBox" name="groupBox_13">
-          <property name="title">
-           <string>Serial Number</string>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <property name="title">
+           <string>Channels</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_12">
            <item alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="SerialNumber">
+            <widget class="QLabel" name="Channels">
              <property name="font">
               <font>
-               <pointsize>20</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>----</string>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignHCenter">
+            <widget class="QLabel" name="HVChannels">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -239,16 +270,42 @@ QDoubleSpinBox {background-color: #FFFFFF;}
         <item row="2" column="0">
          <widget class="QGroupBox" name="groupBox_6">
           <property name="title">
-           <string>Model Name</string>
+           <string>Board Information</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <item alignment="Qt::AlignHCenter">
+          <layout class="QGridLayout" name="gridLayout_11">
+           <item row="2" column="0" alignment="Qt::AlignHCenter">
+            <widget class="QLabel" name="SerialNumber">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>----</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="ModelName">
              <property name="font">
               <font>
-               <pointsize>20</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
+               <pointsize>12</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>----</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" alignment="Qt::AlignHCenter">
+            <widget class="QLabel" name="FamilyCode">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -262,24 +319,9 @@ QDoubleSpinBox {background-color: #FFFFFF;}
         <item row="3" column="2">
          <widget class="QGroupBox" name="groupBox_17">
           <property name="title">
-           <string>License</string>
+           <string>Empty Box II</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_14">
-           <item alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="License">
-             <property name="font">
-              <font>
-               <pointsize>20</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>----</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QVBoxLayout" name="verticalLayout_14"/>
          </widget>
         </item>
         <item row="0" column="2">

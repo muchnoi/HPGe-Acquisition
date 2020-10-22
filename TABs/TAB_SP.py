@@ -19,8 +19,8 @@ class TAB_SP:
       self.ranges = [self.gui.ThresholdASpinBox, self.gui.ThresholdBSpinBox, self.gui.ThresholdCSpinBox]
       self.configure.read('environment.cfg')
       self.data_folder = self.configure.get('Paths','data_folder')
-      if self.configure.has_option('Paths', 'pulser_file'):      self.pulser_file = self.configure.get('Paths','pulser_file')
-      else: print('Warning: no pulser_file in environment.cfg'); self.pulser_file = None
+      if self.configure.has_option('Paths', 'pulser_file'): self.pulser_file = self.configure.get('Paths','pulser_file')
+      else:                                                 self.pulser_file = None
       self.Progress  = 0  
       self.ScaleList = [[0 for i in range(self.ScaleSize)] for j in range(3)]
       self.ScalesMax = [0, 0, 0]
@@ -74,9 +74,13 @@ class TAB_SP:
     self.gui.ProgressBar.setValue(0)
     self.gui.DeadTimeBar.setValue(0)
 
-    C = self.DPP.GetHVChannelConfiguration(self.DPP.CH)
-    self.gui.UBar.setRange(0, int(C['VMax']));  self.gui.UBar.setFormat("%v V")
-    self.gui.IBar.setRange(0, int(C['ISet']));  self.gui.IBar.setFormat("%v μA")
+    if self.DPP.HVCH != None:  
+      C = self.DPP.GetHVChannelConfiguration(self.DPP.HVCH)
+      self.gui.UBar.setRange(0, int(C['VMax']));  self.gui.UBar.setFormat("%v V")
+      self.gui.IBar.setRange(0, int(C['ISet']));  self.gui.IBar.setFormat("%v μA")
+    else:
+      self.gui.UBar.setRange(0, 1);  self.gui.UBar.setFormat("%v V")
+      self.gui.IBar.setRange(0, 1);  self.gui.IBar.setFormat("%v μA")
 
     self.__SetValue(self.gui.AcqNumberSpinBox,  self.AcqPar['StopValue'][i], self.AcqPar['StopSuffix'][i], bool(i))
     self.__SetValue(self.gui.UpdateTimeSpinBox, self.AcqPar['UpdateTime'],     ' s', True)
@@ -146,7 +150,8 @@ class TAB_SP:
     elif 'Stop' in button: 
       self.__Stop_Action()
       for el in self.hide: el.setEnabled(True)
-      for i in [0,1,2]: self.gui.Tabs.setTabEnabled(i, True)
+      for i in [0,2]:           self.gui.Tabs.setTabEnabled(i, True)
+      if self.DPP.HVCH != None: self.gui.Tabs.setTabEnabled(1, True)
 
   def __Stop_Action(self):
     self.gui.timerB.timeout.disconnect(self.__Acquire); self.gui.timerB.stop()
@@ -169,7 +174,8 @@ class TAB_SP:
         self.__Acquisition()
       else: self.__Acquisition() # if acquisition is finished, stop it
     
-    V, I = self.DPP.ReadHVChannelMonitoring(self.DPP.CH)
+    if self.DPP.HVCH != None:  V, I = self.DPP.ReadHVChannelMonitoring(self.DPP.CH)
+    else:                      V, I = 0, 0
     self.gui.UBar.setValue(V); self.gui.IBar.setValue(I)
     
     if R['real_t']>0:
@@ -241,7 +247,7 @@ class TAB_SP:
       f.write(b'# ModelMCA    %s\n'   % self.DPP.boardInfo.ModelName)
       f.write(b'# SerialNumer %d\n'   % self.DPP.boardInfo.SerialNumber)
       f.write(b'# ChannelMCA  %d\n'   % self.DPP.CH)
-      f.write(b'# HV          %d\n'   % self.DPP.ReadHVChannelMonitoring(self.DPP.CH)[0])
+      f.write(b'# HV          %d\n'   % self.DPP.ReadHVChannelMonitoring(self.DPP.HVCH)[0])
       f.write(b'# LLD         %d\n'   % self.DPP.boardConfig.DPPParams.thr[self.DPP.CH])
       f.write(b'# RangeADC    %d\n'   % self.DPP.inputRange[self.DPP.CH])
       f.write(b'# FineGain    %.5f\n' % self.DPP.boardConfig.DPPParams.enf[ self.DPP.CH])
