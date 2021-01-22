@@ -123,16 +123,18 @@ class DGTZ:
   def GetWaveform(self, ch):
     ns = c_uint32()
     ts = c_double()
-    R = self.RQ(self.dpplib.CAENDPP_GetWaveform(self.handle, c_int32(ch), 
-                                                c_int16(self.trigger),  # 1 - Auto Trig
-                                                byref(self.Traces.AT1),
-                                                byref(self.Traces.AT2),
-                                                byref(self.Traces.DT1),
-                                                byref(self.Traces.DT2),
-                                                byref(ns),   # number of samples read
-                                                byref(ts)))  # one sample time
-    if R: return [ns.value, ts.value]
-    else: return [False,    False   ]
+    for attempt in range(3):
+      R = self.RQ(self.dpplib.CAENDPP_GetWaveform(self.handle, c_int32(ch), 
+                                                  c_int16(self.trigger),  # 1 - Auto Trig
+                                                  byref(self.Traces.AT1),
+                                                  byref(self.Traces.AT2),
+                                                  byref(self.Traces.DT1),
+                                                  byref(self.Traces.DT2),
+                                                  byref(ns),   # number of samples read
+                                                  byref(ts)))  # one sample time
+      if R: return [ns.value, ts.value]
+      else: print ('Attempt {:d} fault'.format(attempt))
+    return [False,    False   ]
 
 # HISTOGRAMs etc.
 

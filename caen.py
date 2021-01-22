@@ -11,6 +11,9 @@ class Application(QtWidgets.QMainWindow, design.Ui_MainWindow):
     self.setWindowTitle('Digital MCA Control & Acquisition')
     self.timerA = QTimer()
     self.timerB = QTimer()
+    self.timerC = QTimer()   # this timer is used to clean /tmp/DPPCoreLog.txt
+    self.timerC.start(10000) # every 10 seconds
+    self.timerC.timeout.connect(self.Clean_Log)
     self.tabs   = TABs(self)
     self.actionExit.triggered.connect(self.close)
     self.actionAbout.triggered.connect(self.about)
@@ -20,8 +23,12 @@ class Application(QtWidgets.QMainWindow, design.Ui_MainWindow):
       end = self.tabs.DPP.EndLibrary()
       print("Close connection: ", end)
       self.tabs.DPP.Connection = False
+      self.timerC.stop(10000)
     event.accept()
 #    else: event.ignore()
+
+  def Clean_Log(self):
+    open('/tmp/DPPCoreLog.txt', 'w').close()
 
   def about(self):
     QtWidgets.QMessageBox.about(self, "About Application", "The <b>Application</b> example")

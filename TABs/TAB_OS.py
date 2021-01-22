@@ -12,8 +12,8 @@ class TAB_OS:
       for k,v in self.DPP.GetInfoDict("NumDigitalProbes1", "SupportedDigitalProbes1").items(): 
         self.gui.Digital_1.addItem( 'C: {} '.format(k),  userData = v)
       for v in [1, 4, 16, 64]: 
-        self.gui.PeakMean.addItem(' Peak Mean:   {} sample{}'.format(v, 's'*bool(v-1)), userData = v)
-        self.gui.BaseMean.addItem(' Base Mean:   {} sample{}'.format(v, 's'*bool(v-1)), userData = v)
+        self.gui.PeakMean.addItem('Peak Mean:    {} sample{}'.format(v, 's'*bool(v-1)), userData = v)
+        self.gui.BaseMean.addItem('Base Mean:    {} sample{}'.format(v, 's'*bool(v-1)), userData = v)
         self.gui.Smoothin.addItem('Smoothing: {} sample{}'.format(v, 's'*bool(v-1)), userData = v)
       self.gui.InputPolarity.addItem( 'Pulse: POSITIVE', userData = 0)
       self.gui.InputPolarity.addItem( 'Pulse: NEGATIVE', userData = 1)
