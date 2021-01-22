@@ -23,7 +23,7 @@ class Application(QtWidgets.QMainWindow, design.Ui_MainWindow):
       end = self.tabs.DPP.EndLibrary()
       print("Close connection: ", end)
       self.tabs.DPP.Connection = False
-      self.timerC.stop(10000)
+      self.timerC.stop()
     event.accept()
 #    else: event.ignore()
 
