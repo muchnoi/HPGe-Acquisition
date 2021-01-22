@@ -67,7 +67,7 @@ QDoubleSpinBox {background-color: #FFFFFF;}
 </string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_CF">
        <property name="font">
@@ -888,10 +888,10 @@ margin-top: 1 1ex;}
                     <double>0.500000000000000</double>
                    </property>
                    <property name="maximum">
-                    <double>1.500000000000000</double>
+                    <double>5.000000000000000</double>
                    </property>
                    <property name="singleStep">
-                    <double>0.001000000000000</double>
+                    <double>0.100000000000000</double>
                    </property>
                    <property name="value">
                     <double>1.000000000000000</double>

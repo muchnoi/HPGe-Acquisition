@@ -466,8 +466,8 @@ class Ui_MainWindow(object):
         self.FineGainSpinBox.setFont(font)
         self.FineGainSpinBox.setDecimals(4)
         self.FineGainSpinBox.setMinimum(0.5)
-        self.FineGainSpinBox.setMaximum(1.5)
-        self.FineGainSpinBox.setSingleStep(0.001)
+        self.FineGainSpinBox.setMaximum(5.0)
+        self.FineGainSpinBox.setSingleStep(0.1)
         self.FineGainSpinBox.setProperty("value", 1.0)
         self.FineGainSpinBox.setObjectName("FineGainSpinBox")
         self.verticalLayout_16.addWidget(self.FineGainSpinBox)
@@ -1269,7 +1269,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.Tabs.setCurrentIndex(0)
+        self.Tabs.setCurrentIndex(2)
         self.stackedWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
